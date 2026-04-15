@@ -16,7 +16,7 @@
 
     let crewIndex = 0;
 
-    const targetDate = new Date('2026-05-08T09:00:00');
+    const targetDate = new Date('2026-05-08T11:00:00');
 
     function updateTimer() {
         const now = new Date();
@@ -52,7 +52,7 @@
     ? p.media_urls
     : (p.media_urls ? [p.media_urls] : []),
     caption: p.content,
-    likes: Number(p.likes) || 0,   // 🔥 important
+    likes: Number(p.likes) || 0,
     liked: false
 }));
 
@@ -84,9 +84,8 @@
     }
 
     post.likes = newLikes;
-    posts = [...posts]; // instant UI
+    posts = [...posts]; 
 
-    // 🔥 force DB update
     const { error } = await supabase
         .from('posts')
         .update({ likes: newLikes })
@@ -103,7 +102,7 @@
 
         fetchAll();
 
-        // 🔁 realtime
+        
         supabase.channel('realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchAll)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, fetchAll)
@@ -112,12 +111,14 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, fetchAll)
             .subscribe();
 
-        // 🔥 CREW CAROUSEL
+        
         setInterval(() => {
-            if (crewImages.length > 0) {
-                crewIndex = (crewIndex + 1) % crewImages.length;
-            }
-        }, 3000);
+    if (showCrewViewer) return;
+
+    if (crewImages.length > 0) {
+        crewIndex = (crewIndex + 1) % crewImages.length;
+    }
+}, 3000);
     });
     let selectedPost = null;
 let viewerIndex = 0;
@@ -163,7 +164,7 @@ function closeCrewViewer() {
     font-family: 'Orbitron', sans-serif;
 }
 
-/* TOP BAR */
+
 .topbar {
     position: fixed;
     top: 0;
@@ -229,7 +230,7 @@ function closeCrewViewer() {
     overflow: hidden;
 }
 
-/* POSTS PANEL */
+
 .posts {
     overflow-y: auto;
 }
@@ -285,7 +286,6 @@ function closeCrewViewer() {
     color: #94a3b8;
 }
 
-/* RIGHT GRID */
 .right {
     display: grid;
     grid-template-rows: 240px 1fr;
@@ -313,7 +313,7 @@ function closeCrewViewer() {
     gap: 12px;
 }
 
-/* SCHEDULE */
+
 .schedule {
     overflow-y: auto;
     max-height: 180px;
@@ -340,7 +340,6 @@ function closeCrewViewer() {
 .schedule-item.ongoing { color: #fdc134; }
 .schedule-item.cancelled { color: #ef4444; }
 
-/* CURRENT SPLIT */
 .current-two-panels {
     display: grid;
     grid-template-rows: 1fr 1fr;
@@ -357,7 +356,7 @@ function closeCrewViewer() {
     color: #259ad6;
 }
 
-/* MEDIA */
+
 .media-content img {
     width: 100%;
     height: 120px;
@@ -365,7 +364,7 @@ function closeCrewViewer() {
     border: 1px solid #259ad6;
 }
 
-/* STATS */
+
 .progress-bar {
     height: 8px;
     background: #1e293b;
@@ -411,8 +410,8 @@ function closeCrewViewer() {
 }
 
 .alert-text {
-    height: 60px;              /* 🔥 FIXED HEIGHT */
-    overflow-y: auto;          /* 🔥 ENABLE SCROLL */
+    height: 60px;             
+    overflow-y: auto;          
     overflow-x: hidden;
     font-size: 13px;
     color: #fdc134;
@@ -495,7 +494,6 @@ function closeCrewViewer() {
 
 <div class="page">
 
-    <!-- 🔥 UPDATED POSTS -->
     <div class="posts panel">
 
         <div class="logs-header">
@@ -536,7 +534,6 @@ function closeCrewViewer() {
 
     </div>
 
-    <!-- RIGHT SIDE (UNCHANGED) -->
     <div class="right">
 
         <div class="top-row">
@@ -596,7 +593,6 @@ function closeCrewViewer() {
              on:click={() => openCrewViewer()} />
     {/if}
 
-    <!-- 🔥 ARROWS -->
     <div class="crew-controls">
         <button on:click={prevCrew}>◀</button>
         <button on:click={nextCrew}>▶</button>
@@ -656,7 +652,6 @@ function closeCrewViewer() {
     <button on:click={prevMedia}>◀</button>
     <button on:click={nextMedia}>▶</button>
 
-    <!-- 🔥 DOWNLOAD -->
     <a href={selectedPost.media[viewerIndex]} download target="_blank">
         <button>⬇</button>
     </a>
@@ -691,7 +686,7 @@ function closeCrewViewer() {
             <button on:click={prevCrew}>◀</button>
             <button on:click={nextCrew}>▶</button>
 
-            <!-- 🔥 DOWNLOAD -->
+            
             <a href={crewImages[crewIndex].image_url} download target="_blank">
                 <button>⬇</button>
             </a>

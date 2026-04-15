@@ -14,7 +14,7 @@
             if (user.role === 'Admin') {
                 navigate('admin');
             } else {
-                navigate('student'); // 🔥 FIXED
+                navigate('student'); 
             }
 
         } catch (e) {
@@ -60,7 +60,7 @@ button {
     font-size: 12px;
 }
 
-/* optional back button */
+
 .back {
     margin-top: 10px;
     background: transparent;

@@ -10,7 +10,7 @@
     async function submitPost() {
         let mediaUrls = [];
 
-        // 🔥 Upload max 5 files
+
         for (let file of files.slice(0, 5)) {
 
             const fileExt = file.name.split('.').pop();
@@ -34,13 +34,13 @@
             mediaUrls.push(data.publicUrl);
         }
 
-        // 🔥 Insert post
+
         await supabase.from('posts').insert([
             {
                 user_name: name || "Crew",
                 activity_name: activity,
                 content: content,
-                media_urls: mediaUrls,   // ✅ ARRAY (IMPORTANT)
+                media_urls: mediaUrls,
                 likes: 0,
                 status: "pending"
             }
@@ -48,7 +48,7 @@
 
         alert("Post sent 🚀");
 
-        // 🔄 Reset form
+        
         name = '';
         activity = '';
         content = '';
@@ -77,7 +77,7 @@ button {
     cursor: pointer;
 }
 
-/* 🔥 Preview grid */
+
 .preview {
     display: grid;
     grid-template-columns: repeat(2, 1fr);
@@ -101,11 +101,10 @@ button {
     <input placeholder="Activity Name" bind:value={activity} />
     <textarea placeholder="Write your log..." bind:value={content}></textarea>
 
-    <!-- 🔥 FILE INPUT -->
+
     <input type="file" multiple accept="image/*,video/*"
         on:change={(e) => files = Array.from(e.target.files).slice(0,5)} />
 
-    <!-- 🔥 PREVIEW -->
     {#if files.length > 0}
         <div class="preview">
             {#each files as f}

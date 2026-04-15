@@ -36,11 +36,11 @@
     }
 
     async function sendAlert() {
-        await supabase.from('alerts').delete().neq('id', 0); // 🔥 replace old alert
+        await supabase.from('alerts').delete().neq('id', 0);
         await supabase.from('alerts').insert([{ text: alertText }]);
 
         alertText = '';
-        alert("Alert sent 🚨");
+        alert("Alert sent");
         fetchAll();
     }
 
@@ -57,7 +57,7 @@
             });
 
         if (error) {
-            alert("Upload failed ❌");
+            alert("Upload failed");
             return;
         }
 
@@ -72,7 +72,7 @@
             }
         ]);
 
-        alert("Crew uploaded 🚀");
+        alert("Uploaded");
 
         crewFile = null;
         crewCaption = '';

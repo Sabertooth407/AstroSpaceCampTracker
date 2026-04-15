@@ -2,12 +2,12 @@
     import { onMount } from 'svelte';
 
     let loadingVisible = false;
-    const letterAppearTimes = [0.5, 1, 1.5, 2, 2.5, 3, 3.5]; // Times in seconds when each letter should appear
+    const letterAppearTimes = [0.5, 1, 1.5, 2, 2.5, 3, 3.5];
 
     onMount(() => {
         setTimeout(() => {
             loadingVisible = true;
-        }, ); // Delay before "Loading" appears
+        }, ); 
     });
 </script>
 
@@ -33,7 +33,7 @@
     background: url('/rocket.png') no-repeat center center;
     background-size: cover;
     transform: rotate(45deg);
-    left: -50px; /* Ensure it starts off-screen on the left */
+    left: -50px; 
     animation: shootRocket 3s linear forwards;
 }
 
@@ -83,7 +83,7 @@
     }
 }
 
-/* Apply animation delays based on letterAppearTimes */
+
 .loading span:nth-child(1) { animation-delay: 0.1s; }
 .loading span:nth-child(2) { animation-delay: 0.6s; }
 .loading span:nth-child(3) { animation-delay: 1.1s; }
