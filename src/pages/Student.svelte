@@ -23,7 +23,7 @@
                 });
 
             if (error) {
-                alert("Upload failed ❌");
+                alert("Upload failed");
                 continue;
             }
 
@@ -46,7 +46,7 @@
             }
         ]);
 
-        alert("Post sent 🚀");
+        alert("Post sent");
 
         
         name = '';
@@ -91,6 +91,21 @@ button {
     height: 100px;
     object-fit: cover;
     border: 1px solid #259ad6;
+}
+
+
+@media (max-width: 768px) {
+    .container {
+        padding: 16px;
+    }
+
+    .preview {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    button {
+        width: 100%;
+    }
 }
 </style>
 

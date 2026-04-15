@@ -115,6 +115,26 @@ button {
     width: 200px;
     margin-top: 8px;
 }
+
+
+@media (max-width: 768px) {
+    .container {
+        padding: 12px;
+    }
+
+    .card {
+        font-size: 14px;
+    }
+
+    .media {
+        width: 100%;
+        max-width: 100%;
+    }
+
+    button {
+        width: 100%;
+    }
+}
 </style>
 
 <div class="container">

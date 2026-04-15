@@ -35,26 +35,20 @@
 
     async function fetchAll() {
         const { data: postData } = await supabase.from('posts').select('*').eq('status', 'approved');
-        const { data: alertData } = await supabase
-    .from('alerts')
-    .select('*')
-    .order('created_at', { ascending: false })
-    .limit(1);
+        const { data: alertData } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(1);
         const { data: sched } = await supabase.from('schedule').select('*');
         const { data: current } = await supabase.from('schedule').select('*').eq('status', 'ongoing').maybeSingle();
         const { data: crew } = await supabase.from('crew_media').select('*').order('created_at', { ascending: false });
         const { data: teamData } = await supabase.from('teams').select('*').order('points', { ascending: false });
 
         posts = (postData || []).map(p => ({
-    id: p.id,
-    user: p.user_name,
-    media: Array.isArray(p.media_urls)
-    ? p.media_urls
-    : (p.media_urls ? [p.media_urls] : []),
-    caption: p.content,
-    likes: Number(p.likes) || 0,
-    liked: false
-}));
+            id: p.id,
+            user: p.user_name,
+            media: Array.isArray(p.media_urls) ? p.media_urls : (p.media_urls ? [p.media_urls] : []),
+            caption: p.content,
+            likes: Number(p.likes) || 0,
+            liked: false
+        }));
 
         alerts = alertData || [];
 
@@ -73,28 +67,13 @@
     }
 
     async function likePost(post) {
-    let newLikes;
+        let newLikes = post.liked ? post.likes - 1 : post.likes + 1;
+        post.liked = !post.liked;
+        post.likes = newLikes;
+        posts = [...posts];
 
-    if (!post.liked) {
-        newLikes = post.likes + 1;
-        post.liked = true;
-    } else {
-        newLikes = post.likes - 1;
-        post.liked = false;
+        await supabase.from('posts').update({ likes: newLikes }).eq('id', post.id);
     }
-
-    post.likes = newLikes;
-    posts = [...posts]; 
-
-    const { error } = await supabase
-        .from('posts')
-        .update({ likes: newLikes })
-        .eq('id', post.id);
-
-    if (error) {
-        console.error(error);
-    }
-}
 
     onMount(() => {
         updateTimer();
@@ -102,7 +81,6 @@
 
         fetchAll();
 
-        
         supabase.channel('realtime')
             .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchAll)
             .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, fetchAll)
@@ -111,51 +89,35 @@
             .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, fetchAll)
             .subscribe();
 
-        
         setInterval(() => {
-    if (showCrewViewer) return;
-
-    if (crewImages.length > 0) {
-        crewIndex = (crewIndex + 1) % crewImages.length;
-    }
-}, 3000);
+            if (showCrewViewer) return;
+            if (crewImages.length > 0) {
+                crewIndex = (crewIndex + 1) % crewImages.length;
+            }
+        }, 3000);
     });
+
     let selectedPost = null;
-let viewerIndex = 0;
+    let viewerIndex = 0;
 
-function openViewer(post, index = 0) {
-    selectedPost = post;
-    viewerIndex = index;
-}
+    function openViewer(post, index = 0) {
+        selectedPost = post;
+        viewerIndex = index;
+    }
 
-function closeViewer() {
-    selectedPost = null;
-}
+    function closeViewer() { selectedPost = null; }
 
-function nextMedia() {
-    viewerIndex = (viewerIndex + 1) % selectedPost.media.length;
-}
+    function nextMedia() { viewerIndex = (viewerIndex + 1) % selectedPost.media.length; }
+    function prevMedia() { viewerIndex = (viewerIndex - 1 + selectedPost.media.length) % selectedPost.media.length; }
 
-function prevMedia() {
-    viewerIndex = (viewerIndex - 1 + selectedPost.media.length) % selectedPost.media.length;
-}
-function nextCrew() {
-    crewIndex = (crewIndex + 1) % crewImages.length;
-}
+    function nextCrew() { crewIndex = (crewIndex + 1) % crewImages.length; }
+    function prevCrew() { crewIndex = (crewIndex - 1 + crewImages.length) % crewImages.length; }
 
-function prevCrew() {
-    crewIndex = (crewIndex - 1 + crewImages.length) % crewImages.length;
-}
-let showCrewViewer = false;
-
-function openCrewViewer() {
-    showCrewViewer = true;
-}
-
-function closeCrewViewer() {
-    showCrewViewer = false;
-}
+    let showCrewViewer = false;
+    function openCrewViewer() { showCrewViewer = true; }
+    function closeCrewViewer() { showCrewViewer = false; }
 </script>
+
 
 <style>
 :global(body) {
@@ -235,10 +197,31 @@ function closeCrewViewer() {
     overflow-y: auto;
 }
 
+@media (max-width: 768px) {
+    .posts {
+        min-height: 60vh;
+    }
+
+    .post-card {
+        padding: 10px;
+        border: 1px solid #259ad6;
+        border-radius: 6px;
+        margin-bottom: 12px;
+    }
+
+    .post-img {
+        width: 100%;
+        height: auto;
+        max-height: 300px;
+        object-fit: cover;
+    }
+}
+
 .logs-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
+    padding-right: 10px;
 }
 
 .post-btn {
@@ -247,6 +230,7 @@ function closeCrewViewer() {
     color: #259ad6;
     padding: 4px 10px;
     cursor: pointer;
+    margin-right: 8px;
 }
 
 .post-card {
@@ -475,6 +459,83 @@ function closeCrewViewer() {
     padding: 2px 4px;
     cursor: pointer;
 }
+
+@media (max-width: 768px) {
+
+    .topbar {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        padding: 6px;
+        gap: 4px;
+        border-bottom: 3px solid #259ad6;
+    }
+
+    .title {
+        order: 1;
+        font-size: 24px;
+        letter-spacing: 2px;
+    }
+
+    .timer {
+        order: 3;
+        font-size: 12px;
+    }
+
+    .logo {
+        order:2;
+        justify-content: center;
+    }
+
+    .logo img {
+        height: 22px;
+    }
+
+    .page {
+        position: absolute;
+        top: 80px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .right {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .top-row {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .current-two-panels {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .post-img {
+        height: auto;
+        max-height: 250px;
+        object-fit: cover;
+    }
+
+    .media-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .media-content img,
+    .media-content video {
+        height: 180px;
+        object-fit: cover;
+    }
+
+    .viewer-content {
+        max-width: 95%;
+        max-height: 90%;
+    }
+}
+
 </style>
 
 <div class="topbar">
@@ -505,7 +566,7 @@ function closeCrewViewer() {
 
         {#each posts as post}
             <div class="post-card">
-                <div class="post-user">🚀 {post.user}</div>
+                <div class="post-user">{post.user}</div>
 
                 {#if post.media && post.media.length > 0}
     <div class="media-grid">

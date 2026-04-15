@@ -67,6 +67,17 @@ button {
     border: 1px solid #259ad6;
     color: #259ad6;
 }
+
+@media (max-width: 768px) {
+    .box {
+        width: 90%;
+        padding: 20px;
+    }
+
+    h3 {
+        text-align: center;
+    }
+}
 </style>
 
 <div class="container">
