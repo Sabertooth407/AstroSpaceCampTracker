@@ -343,7 +343,7 @@
 
 .media-content img {
     width: 100%;
-    height: 120px;
+    height: 110px;
     object-fit: cover;
     border: 1px solid #259ad6;
 }
@@ -447,16 +447,17 @@
 
 .viewer-text {
     color: white;
+    font-size: 14px;
 }
 .crew-controls {
     display: flex;
     justify-content: center;
-    gap: 8px;
+    gap: 5px;
     margin-top: 6px;
 }
 
 .crew-controls button {
-    padding: 2px 4px;
+    padding: 1px 2px;
     cursor: pointer;
 }
 
@@ -536,6 +537,49 @@
     }
 }
 
+/* ===== MOBILE TOPBAR FIX (NO HTML CHANGE) ===== */
+@media (max-width: 768px) {
+
+    .topbar {
+        display: grid !important;
+        grid-template-columns: 1fr auto;
+        grid-template-rows: auto auto;
+        align-items: center;
+        padding: 8px 10px;
+        border-bottom: 3px solid #259ad6;
+        row-gap: 4px;
+    }
+
+    /* TITLE (top-left) */
+    .title {
+        grid-column: 1 / 2;
+        grid-row: 1 / 2;
+        font-size: 22px;
+        letter-spacing: 2px;
+        text-align: left;
+    }
+
+    /* LOGO (below title, left) */
+    .logo {
+        grid-column: 1 / 2;
+        grid-row: 2 / 3;
+        justify-content: flex-start;
+    }
+
+    .logo img {
+        height: 18px;
+    }
+
+    /* TIMER (right side spanning both rows) */
+    .timer {
+        grid-column: 2 / 3;
+        grid-row: 1 / 3;
+        font-size: 12px;
+        text-align: right;
+        align-self: center;
+        white-space: nowrap;
+    }
+}
 </style>
 
 <div class="topbar">
