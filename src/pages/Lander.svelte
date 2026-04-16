@@ -2,7 +2,8 @@
     import { onMount } from 'svelte';
     import { supabase } from '../lib/supabase';
     export let navigate;
-
+    let activeTab = 'posts';
+let isMobile = false;
     let countdown = '';
     let posts = [];
     let alerts = [];
@@ -48,14 +49,26 @@ overrideSession = override;
         const { data: crew } = await supabase.from('crew_media').select('*').order('created_at', { ascending: false });
         const { data: teamData } = await supabase.from('teams').select('*').order('points', { ascending: false });
 
-        posts = (postData || []).map(p => ({
+        posts = (postData || [])
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .map(p => {
+        const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
+
+        return {
             id: p.id,
             user: p.user_name,
-            media: Array.isArray(p.media_urls) ? p.media_urls : (p.media_urls ? [p.media_urls] : []),
+
+            media: Array.isArray(p.media_urls)
+                ? p.media_urls
+                : (p.media_urls ? [p.media_urls] : []),
+
             caption: p.content,
             likes: Number(p.likes) || 0,
-            liked: false
-        }));
+
+            liked: likedPosts[p.id] || false,
+            created_at: p.created_at
+        };
+    });
 
         alerts = alertData || [];
 
@@ -75,34 +88,90 @@ overrideSession = override;
     }
 
     async function likePost(post) {
-        let newLikes = post.liked ? post.likes - 1 : post.likes + 1;
-        post.liked = !post.liked;
-        post.likes = newLikes;
-        posts = [...posts];
+    const likedPosts = JSON.parse(localStorage.getItem('likedPosts') || '{}');
 
-        await supabase.from('posts').update({ likes: newLikes }).eq('id', post.id);
+    let newLikes;
+
+    if (likedPosts[post.id]) {
+        newLikes = post.likes - 1;
+        delete likedPosts[post.id];
+        post.liked = false;
+    } else {
+        newLikes = post.likes + 1;
+        likedPosts[post.id] = true;
+        post.liked = true;
     }
 
+    post.likes = newLikes;
+    posts = [...posts];
+
+    localStorage.setItem('likedPosts', JSON.stringify(likedPosts));
+
+    await supabase
+        .from('posts')
+        .update({ likes: newLikes })
+        .eq('id', post.id);
+}
+
     onMount(() => {
-        updateTimer();
-        setInterval(updateTimer, 1000);
-        fetchAll();
+    updateTimer();
+    setInterval(updateTimer, 1000);
 
-        supabase.channel('realtime')
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'posts' }, fetchAll)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'schedule' }, fetchAll)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'alerts' }, fetchAll)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'crew_media' }, fetchAll)
-            .on('postgres_changes', { event: '*', schema: 'public', table: 'teams' }, fetchAll)
-            .subscribe();
+    fetchAll();
+const checkMobile = () => isMobile = window.innerWidth <= 768;
+checkMobile();
+window.addEventListener('resize', checkMobile);
+    const channel = supabase
+        .channel('live-updates')
 
-        setInterval(() => {
-            if (showCrewViewer) return;
-            if (crewImages.length > 0) {
-                crewIndex = (crewIndex + 1) % crewImages.length;
-            }
-        }, 3000);
-    });
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'posts'
+        }, (payload) => {
+            console.log('POST CHANGE', payload);
+            fetchAll();
+        })
+
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'schedule'
+        }, () => fetchAll())
+
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'alerts'
+        }, () => fetchAll())
+
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'crew_media'
+        }, () => fetchAll())
+
+        .on('postgres_changes', {
+            event: '*',
+            schema: 'public',
+            table: 'teams'
+        }, () => fetchAll())
+
+        .subscribe((status) => {
+            console.log('REALTIME STATUS:', status);
+        });
+
+    const interval = setInterval(() => {
+        if (showCrewViewer) return;
+        if (crewImages.length > 0) {
+            crewIndex = (crewIndex + 1) % crewImages.length;
+        }
+    }, 3000);
+    return () => {
+        supabase.removeChannel(channel);
+        clearInterval(interval);
+    };
+});
 
     let selectedPost = null;
     let viewerIndex = 0;
@@ -143,7 +212,7 @@ overrideSession = override;
     display: grid;
     grid-template-columns: 1fr auto 1fr;
     align-items: center;
-
+    gap: 8px;
     padding: 8px 24px 6px 24px;
 
     border-bottom: 5px solid #259ad6;
@@ -279,8 +348,8 @@ overrideSession = override;
 
 .right {
     display: grid;
-    grid-template-rows: 240px 1fr;
-    gap: 12px;
+    grid-template-rows: auto auto;
+    gap: 6px;
 }
 
 .panel {
@@ -404,7 +473,7 @@ overrideSession = override;
     height: 60px;             
     overflow-y: auto;          
     overflow-x: hidden;
-    font-size: 13px;
+    font-size: 22px;
     color: #fdc134;
     line-height: 1.4;
     word-break: break-word; 
@@ -544,7 +613,7 @@ overrideSession = override;
     }
 }
 
-/* ===== MOBILE TOPBAR FIX (NO HTML CHANGE) ===== */
+
 @media (max-width: 768px) {
 
     .topbar {
@@ -557,7 +626,7 @@ overrideSession = override;
         row-gap: 4px;
     }
 
-    /* TITLE (top-left) */
+
     .title {
         grid-column: 1 / 2;
         grid-row: 1 / 2;
@@ -566,7 +635,7 @@ overrideSession = override;
         text-align: left;
     }
 
-    /* LOGO (below title, left) */
+  
     .logo {
         grid-column: 1 / 2;
         grid-row: 2 / 3;
@@ -577,7 +646,6 @@ overrideSession = override;
         height: 18px;
     }
 
-    /* TIMER (right side spanning both rows) */
     .timer {
         grid-column: 2 / 3;
         grid-row: 1 / 3;
@@ -587,8 +655,68 @@ overrideSession = override;
         white-space: nowrap;
     }
 }
-</style>
 
+.mobile-tabs {
+    display: none;
+}
+
+@media (max-width: 768px) {
+    .mobile-tabs {
+        display: flex;
+        justify-content: space-around;
+        padding: 6px;
+        background: rgba(0,0,0,0.9);
+        border-bottom: 2px solid #259ad6;
+        position: fixed;
+        top: 80px;
+        left: 0;
+        right: 0;
+        z-index: 20;
+    }
+
+    .mobile-tabs button {
+        background: transparent;
+        border: 1px solid #259ad6;
+        color: #259ad6;
+        padding: 6px 10px;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .mobile-tabs button.active {
+        background: #259ad6;
+        color: black;
+    }
+
+    .page {
+        top: 130px; /* push below tabs */
+    }
+}
+
+@media (min-width: 769px) {
+    .page {
+        display: grid;
+        grid-template-columns: 1.2fr 2fr;
+        grid-template-rows: auto auto;
+    }
+
+    .posts {
+        grid-column: 1 / 2;
+        grid-row: 1 / 3;
+    }
+
+    .right {
+        grid-column: 2 / 3;
+        grid-row: 1 / 2;
+    }
+
+    /* 👇 THIS FIXES YOUR PROBLEM */
+    .page > .panel:last-child {
+        grid-column: 2 / 3;
+        grid-row: 2 / 3;
+    }
+}
+</style>
 <div class="topbar">
     <div class="timer">
         {@html countdown
@@ -604,34 +732,48 @@ overrideSession = override;
     </div>
 </div>
 
+<!-- MOBILE TABS -->
+<div class="mobile-tabs">
+    <button class:active={activeTab === 'posts'} on:click={() => activeTab = 'posts'}>Logs</button>
+    <button class:active={activeTab === 'live'} on:click={() => activeTab = 'live'}>Live</button>
+    <button class:active={activeTab === 'stats'} on:click={() => activeTab = 'stats'}>Stats</button>
+</div>
+
 <div class="page">
 
+    <!-- ================= POSTS ================= -->
+    {#if !isMobile || activeTab === 'posts'}
     <div class="posts panel">
 
         <div class="logs-header">
             <div class="panel-title">MISSION LOGS</div>
             <button class="post-btn" on:click={() => navigate('portal')}>
-    ＋ POST
-</button>
+                ＋ POST
+            </button>
         </div>
 
         {#each posts as post}
             <div class="post-card">
-                <div class="post-user">{post.user}</div>
+                <div class="post-user">
+                    {post.user}
+                    <div style="font-size:10px; color:#64748b;">
+                        {new Date(post.created_at).toLocaleString()}
+                    </div>
+                </div>
 
                 {#if post.media && post.media.length > 0}
-    <div class="media-grid">
-{#each post.media.slice(0,5) as m, i}
-    {#if m.match(/\.(mp4|webm|ogg)$/)}
-        <video class="post-img" on:click={() => openViewer(post, i)} muted>
-            <source src={m} />
-        </video>
-    {:else}
-        <img class="post-img" src={m} on:click={() => openViewer(post, i)} />
-    {/if}
-{/each}
-</div>
-{/if}
+                <div class="media-grid">
+                    {#each post.media.slice(0,5) as m, i}
+                        {#if m.match(/\.(mp4|webm|ogg)$/)}
+                            <video class="post-img" on:click={() => openViewer(post, i)} muted>
+                                <source src={m} />
+                            </video>
+                        {:else}
+                            <img class="post-img" src={m} on:click={() => openViewer(post, i)} />
+                        {/if}
+                    {/each}
+                </div>
+                {/if}
 
                 <div class="post-actions">
                     <span on:click={() => likePost(post)}>❤️ {post.likes}</span>
@@ -640,198 +782,143 @@ overrideSession = override;
                 <div class="post-caption">
                     <strong>{post.user}</strong> {post.caption}
                 </div>
-
             </div>
         {/each}
 
     </div>
+    {/if}
 
+    <!-- ================= LIVE (RIGHT PANEL) ================= -->
+    {#if !isMobile || activeTab === 'live'}
     <div class="right">
 
         <div class="top-row">
 
+            <!-- SCHEDULE -->
             <div class="panel">
                 <div class="panel-title">FULL SCHEDULE</div>
                 <div class="schedule">
+
                     {#each Object.entries(
-    scheduleData.reduce((acc, s) => {
-        if (!acc[s.day]) acc[s.day] = [];
-        acc[s.day].push(s);
-        return acc;
-    }, {})
-) as [day, sessions]}
+                        scheduleData.reduce((acc, s) => {
+                            if (!acc[s.day]) acc[s.day] = [];
+                            acc[s.day].push(s);
+                            return acc;
+                        }, {})
+                    ) as [day, sessions]}
 
-    <div style="margin-bottom:10px;">
-        <div style="color:#259ad6; font-weight:bold;">DAY {day}</div>
+                        <div style="margin-bottom:10px;">
+                            <div style="color:#259ad6; font-weight:bold;">DAY {day}</div>
 
-        {#each sessions as item}
-            <div class="schedule-item {item.status}">
-                <span class="status-icon">
-                    {#if item.status === 'done'} ✔ {/if}
-                    {#if item.status === 'ongoing'} ● {/if}
-                    {#if item.status === 'cancelled'} ✖ {/if}
-                </span>
-                {item.time} — {item.name}
-            </div>
-        {/each}
-    </div>
+                            {#each sessions as item}
+                                <div class="schedule-item {item.status}">
+                                    <span class="status-icon">
+                                        {#if item.status === 'done'} ✔ {/if}
+                                        {#if item.status === 'ongoing'} ● {/if}
+                                        {#if item.status === 'cancelled'} ✖ {/if}
+                                    </span>
+                                    {item.time} — {item.name}
+                                </div>
+                            {/each}
+                        </div>
 
-{/each}
+                    {/each}
+
                 </div>
             </div>
 
+            <!-- CURRENT + ALERT -->
             <div class="current-two-panels">
+
                 <div class="panel">
                     <div class="panel-title">CURRENT SESSION</div>
+
                     {#if overrideSession}
-    <div class="session-name">{overrideSession.session_name}</div>
-    <div class="session-time"></div>
-
-{:else if currentSession}
-    <div class="session-name">{currentSession.session_name}</div>
-    <div class="session-time">{currentSession.time}</div>
-
-{:else}
-    <div class="session-name">No Active Session</div>
-{/if}
+                        <div class="session-name">{overrideSession.session_name}</div>
+                    {:else if currentSession}
+                        <div class="session-name">{currentSession.session_name}</div>
+                        <div class="session-time">{currentSession.time}</div>
+                    {:else}
+                        <div class="session-name">No Active Session</div>
+                    {/if}
                 </div>
+
+                <div class="panel">
+                    <div class="panel-title">ALERTS</div>
+
+                    {#if alerts.length > 0}
+                        <div class="alert-row">
+                            <span class="alert-icon">⚠</span>
+                            <div class="alert-text">
+                                {alerts[0].text}
+                            </div>
+                        </div>
+                    {/if}
+                </div>
+
+            </div>
+
+            <!-- CREW -->
+            <div class="panel">
+                <div class="panel-title">CREW</div>
+
+                <div class="media-content">
+                    {#if crewImages.length > 0}
+
+                        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
+                            <video autoplay muted loop on:click={openCrewViewer}>
+                                <source src={crewImages[crewIndex].image_url} />
+                            </video>
+                        {:else}
+                            <img src={crewImages[crewIndex].image_url}
+                                 on:click={openCrewViewer} />
+                        {/if}
+
+                        <div class="crew-controls">
+                            <button on:click={prevCrew}>◀</button>
+                            <button on:click={nextCrew}>▶</button>
+                        </div>
+
+                        {#if crewImages[crewIndex].caption}
+                            <div style="text-align:center; margin-top:6px;">
+                                {crewImages[crewIndex].caption}
+                            </div>
+                        {/if}
+
+                    {/if}
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+    {/if}
+
+    <!-- ================= STATS ================= -->
+    {#if !isMobile || activeTab === 'stats'}
     <div class="panel">
-    <div class="panel-title">ALERTS</div>
 
-    {#if alerts.length > 0}
-        <div class="alert-row">
-            <span class="alert-icon">⚠</span>
-            <div class="alert-text">
-                {alerts[0].text}
-            </div>
+        <div class="panel-title">MISSION STATS</div>
+
+        Sessions Completed: {completed} / {total}
+
+        <div class="progress-bar">
+            <div class="progress-fill"
+                 style="width:{total ? (completed/total)*100 : 0}%"></div>
         </div>
-    {/if}
-    </div>
+
+        <br>
+
+        <div class="panel-title">LEADING CREWS</div>
+
+        {#each teams as t}
+            <div class="leader">
+                <span>{t.team_name}</span>
+                <span>{t.points}</span>
             </div>
+        {/each}
 
-    <div class="panel">
-    <div class="panel-title">CREW</div>
-
-    <div class="media-content">
-        {#if crewImages.length > 0}
-
-    {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
-        <video autoplay muted loop on:click={() => openCrewViewer()}>
-            <source src={crewImages[crewIndex].image_url} />
-        </video>
-    {:else}
-        <img src={crewImages[crewIndex].image_url}
-             on:click={() => openCrewViewer()} />
+    </div>
     {/if}
 
-    <div class="crew-controls">
-        <button on:click={prevCrew}>◀</button>
-        <button on:click={nextCrew}>▶</button>
-    </div>
-
-    {#if crewImages[crewIndex].caption}
-        <div style="text-align:center; margin-top:6px;">
-            {crewImages[crewIndex].caption}
-        </div>
-    {/if}
-
-{/if}
-    </div>
-    </div>
-
-        </div>
-
-       <div class="panel">
-    <div class="panel-title">MISSION STATS</div>
-
-    Sessions Completed: {completed} / {total}
-
-    <div class="progress-bar">
-        <div class="progress-fill" style="width:{total ? (completed/total)*100 : 0}%"></div>
-    </div>
-
-    <br>
-
-    <div class="panel-title">LEADING CREWS</div>
-
-    {#each teams as t}
-        <div class="leader">
-            <span>{t.team_name}</span>
-            <span>{t.points}</span>
-        </div>
-    {/each}
-    </div>
-
-    </div>
-
 </div>
-
-{#if selectedPost}
-<div class="viewer" on:click={closeViewer}>
-
-    <div class="viewer-content" on:click|stopPropagation>
-
-        {#if selectedPost.media[viewerIndex].match(/\.(mp4|webm|ogg)$/)}
-            <video controls autoplay>
-                <source src={selectedPost.media[viewerIndex]} />
-            </video>
-        {:else}
-            <img src={selectedPost.media[viewerIndex]} />
-        {/if}
-
-        <div class="viewer-controls">
-    <button on:click={prevMedia}>◀</button>
-    <button on:click={nextMedia}>▶</button>
-
-    <a href={selectedPost.media[viewerIndex]} download target="_blank">
-        <button>⬇</button>
-    </a>
-
-    <button on:click={closeViewer}>✖</button>
-</div>
-
-        <div class="viewer-text">
-            <b>{selectedPost.user}</b><br>
-            {selectedPost.caption}
-        </div>
-
-    </div>
-
-</div>
-{/if}
-
-{#if showCrewViewer}
-<div class="viewer" on:click={closeCrewViewer}>
-
-    <div class="viewer-content" on:click|stopPropagation>
-
-        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
-            <video controls autoplay>
-                <source src={crewImages[crewIndex].image_url} />
-            </video>
-        {:else}
-            <img src={crewImages[crewIndex].image_url} />
-        {/if}
-
-        <div class="viewer-controls">
-            <button on:click={prevCrew}>◀</button>
-            <button on:click={nextCrew}>▶</button>
-
-            
-            <a href={crewImages[crewIndex].image_url} download target="_blank">
-                <button>⬇</button>
-            </a>
-
-            <button on:click={closeCrewViewer}>✖</button>
-        </div>
-
-        {#if crewImages[crewIndex].caption}
-            <div class="viewer-text">
-                {crewImages[crewIndex].caption}
-            </div>
-        {/if}
-
-    </div>
-
-</div>
-{/if}

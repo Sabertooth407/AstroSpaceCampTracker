@@ -6,10 +6,18 @@
     let activity = '';
     let content = '';
     let files = [];
+    let loading = false; // ✅ prevent double submit
 
     async function submitPost() {
-        let mediaUrls = [];
+        if (loading) return; // 🚫 block duplicate clicks
+        loading = true;
 
+        // ✅ capture values immediately (fixes "Crew + Name" issue)
+        const finalName = name.trim() || "Crew";
+        const finalActivity = activity;
+        const finalContent = content;
+
+        let mediaUrls = [];
 
         for (let file of files.slice(0, 5)) {
 
@@ -24,7 +32,8 @@
 
             if (error) {
                 alert("Upload failed");
-                continue;
+                loading = false;
+                return;
             }
 
             const { data } = supabase.storage
@@ -34,12 +43,11 @@
             mediaUrls.push(data.publicUrl);
         }
 
-
         await supabase.from('posts').insert([
             {
-                user_name: name || "Crew",
-                activity_name: activity,
-                content: content,
+                user_name: finalName,
+                activity_name: finalActivity,
+                content: finalContent,
                 media_urls: mediaUrls,
                 likes: 0,
                 status: "pending"
@@ -48,11 +56,12 @@
 
         alert("Post sent");
 
-        
+        // ✅ reset after everything finishes
         name = '';
         activity = '';
         content = '';
         files = [];
+        loading = false;
     }
 </script>
 
@@ -77,6 +86,10 @@ button {
     cursor: pointer;
 }
 
+button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
 
 .preview {
     display: grid;
@@ -92,7 +105,6 @@ button {
     object-fit: cover;
     border: 1px solid #259ad6;
 }
-
 
 @media (max-width: 768px) {
     .container {
@@ -116,7 +128,6 @@ button {
     <input placeholder="Activity Name" bind:value={activity} />
     <textarea placeholder="Write your log..." bind:value={content}></textarea>
 
-
     <input type="file" multiple accept="image/*,video/*"
         on:change={(e) => files = Array.from(e.target.files).slice(0,5)} />
 
@@ -134,9 +145,13 @@ button {
         </div>
     {/if}
 
-    <button on:click={submitPost}>Submit</button>
+    <!-- ✅ button lock + feedback -->
+    <button on:click={submitPost} disabled={loading}>
+        {loading ? "Posting..." : "Submit"}
+    </button>
 
     <br><br>
+
     <button on:click={() => navigate('lander')}>
         ← Back
     </button>
