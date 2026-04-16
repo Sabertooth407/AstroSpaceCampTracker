@@ -32,12 +32,19 @@
 
         countdown = `${isPast ? 'T+' : 'T-'} ${d}d ${h}h ${m}m ${s}s`;
     }
-
+let overrideSession = null;
     async function fetchAll() {
         const { data: postData } = await supabase.from('posts').select('*').eq('status', 'approved');
         const { data: alertData } = await supabase.from('alerts').select('*').order('created_at', { ascending: false }).limit(1);
-        const { data: sched } = await supabase.from('schedule').select('*');
-        const { data: current } = await supabase.from('schedule').select('*').eq('status', 'ongoing').maybeSingle();
+        const { data: sched } = await supabase
+    .from('schedule')
+    .select('*')
+    .order('day', { ascending: true })
+    .order('time', { ascending: true });
+        const { data: override } = await supabase.from('current_override').select('*').maybeSingle();
+const { data: current } = await supabase.from('schedule').select('*').eq('status', 'ongoing').maybeSingle();
+
+overrideSession = override;
         const { data: crew } = await supabase.from('crew_media').select('*').order('created_at', { ascending: false });
         const { data: teamData } = await supabase.from('teams').select('*').order('points', { ascending: false });
 
@@ -53,6 +60,7 @@
         alerts = alertData || [];
 
         scheduleData = (sched || []).map(s => ({
+            day: s.day,
             time: s.time,
             name: s.session_name,
             status: s.status
@@ -78,7 +86,6 @@
     onMount(() => {
         updateTimer();
         setInterval(updateTimer, 1000);
-
         fetchAll();
 
         supabase.channel('realtime')
@@ -646,25 +653,44 @@
             <div class="panel">
                 <div class="panel-title">FULL SCHEDULE</div>
                 <div class="schedule">
-                    {#each scheduleData as item}
-                        <div class="schedule-item {item.status}">
-                            <span class="status-icon">
-                                {#if item.status === 'done'} ✔ {/if}
-                                {#if item.status === 'ongoing'} ● {/if}
-                                {#if item.status === 'cancelled'} ✖ {/if}
-                            </span>
-                            {item.time} — {item.name}
-                        </div>
-                    {/each}
+                    {#each Object.entries(
+    scheduleData.reduce((acc, s) => {
+        if (!acc[s.day]) acc[s.day] = [];
+        acc[s.day].push(s);
+        return acc;
+    }, {})
+) as [day, sessions]}
+
+    <div style="margin-bottom:10px;">
+        <div style="color:#259ad6; font-weight:bold;">DAY {day}</div>
+
+        {#each sessions as item}
+            <div class="schedule-item {item.status}">
+                <span class="status-icon">
+                    {#if item.status === 'done'} ✔ {/if}
+                    {#if item.status === 'ongoing'} ● {/if}
+                    {#if item.status === 'cancelled'} ✖ {/if}
+                </span>
+                {item.time} — {item.name}
+            </div>
+        {/each}
+    </div>
+
+{/each}
                 </div>
             </div>
 
             <div class="current-two-panels">
                 <div class="panel">
                     <div class="panel-title">CURRENT SESSION</div>
-                    {#if currentSession}
+                    {#if overrideSession}
+    <div class="session-name">{overrideSession.session_name}</div>
+    <div class="session-time"></div>
+
+{:else if currentSession}
     <div class="session-name">{currentSession.session_name}</div>
     <div class="session-time">{currentSession.time}</div>
+
 {:else}
     <div class="session-name">No Active Session</div>
 {/if}
