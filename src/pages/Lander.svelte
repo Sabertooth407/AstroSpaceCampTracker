@@ -266,6 +266,7 @@ window.addEventListener('resize', checkMobile);
     padding: 12px;
 
     overflow: hidden;
+    
 }
 
 
@@ -355,7 +356,7 @@ window.addEventListener('resize', checkMobile);
 .panel {
     border: 2px solid #259ad6;
     background: rgba(0, 0, 0, 0.6);
-    padding: 12px;
+    padding: 9px;
     box-shadow: 0 0 10px #259ad644;
 }
 
