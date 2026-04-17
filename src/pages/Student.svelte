@@ -103,7 +103,6 @@ button {
     background: #259ad6;
     border: none;
     cursor: pointer;
-    color: white;
 }
 
 button:disabled {

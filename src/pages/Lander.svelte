@@ -970,6 +970,13 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     }
 }
 
+@media (min-width: 769px) {
+    .session-name {
+        font-size: clamp(10px, 1vw, 18px);
+        line-height: 1;
+        word-break: break-word;
+    }
+}
 </style>
 <div class="topbar">
     <div class="timer">
