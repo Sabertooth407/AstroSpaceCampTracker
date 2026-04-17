@@ -2,6 +2,8 @@
     import { onMount } from 'svelte';
     import { supabase } from '../lib/supabase';
     export let navigate;
+    let crewStartX = 0;
+    let postIndexes = {};
     let activeTab = 'posts';
 let isMobile = false;
     let countdown = '';
@@ -177,7 +179,10 @@ window.addEventListener('resize', checkMobile);
     let viewerIndex = 0;
 
     function openViewer(post, index = 0) {
-        selectedPost = post;
+        selectedPost ={
+        ...post,
+        media: post.media.slice(0, 5)
+    };
         viewerIndex = index;
     }
 
@@ -192,6 +197,76 @@ window.addEventListener('resize', checkMobile);
     let showCrewViewer = false;
     function openCrewViewer() { showCrewViewer = true; }
     function closeCrewViewer() { showCrewViewer = false; }
+
+let touchStartX = 0;
+let touchEndX = 0;
+
+function handleTouchStart(e) {
+    touchStartX = e.changedTouches[0].screenX;
+}
+
+function handleTouchEnd(e) {
+    touchEndX = e.changedTouches[0].screenX;
+
+    if (touchStartX - touchEndX > 50) {
+        nextMedia();
+    }
+
+    if (touchEndX - touchStartX > 50) {
+        prevMedia();
+    }
+}
+function nextPostMedia(postId, mediaLength) {
+    postIndexes[postId] = ((postIndexes[postId] || 0) + 1) % Math.min(mediaLength, 5);
+    postIndexes = { ...postIndexes };
+}
+
+function prevPostMedia(postId, mediaLength) {
+    postIndexes[postId] =
+        ((postIndexes[postId] || 0) - 1 + Math.min(mediaLength, 5)) % Math.min(mediaLength, 5);
+    postIndexes = { ...postIndexes };
+}
+let startX = 0;
+
+function handlePostTouchStart(e) {
+    startX = e.changedTouches[0].screenX;
+}
+
+function handlePostTouchEnd(e, post) {
+    let endX = e.changedTouches[0].screenX;
+
+    if (startX - endX > 50) {
+        nextPostMedia(post.id, post.media.length);
+    }
+
+    if (endX - startX > 50) {
+        prevPostMedia(post.id, post.media.length);
+    }
+}
+
+function handleCrewTouchStart(e) {
+    crewStartX = e.changedTouches[0].screenX;
+}
+
+function handleCrewTouchEnd(e) {
+    let endX = e.changedTouches[0].screenX;
+
+    if (crewStartX - endX > 50) {
+        nextCrew(); // swipe left
+    }
+
+    if (endX - crewStartX > 50) {
+        prevCrew(); // swipe right
+    }
+}
+
+
+let boys = 18;
+let girls = 12;
+
+$: totalPeople = boys + girls;
+$: boysPercent = totalPeople ? (boys / totalPeople) * 100 : 0;
+$: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 </script>
 
 
@@ -310,6 +385,17 @@ window.addEventListener('resize', checkMobile);
     margin-right: 8px;
 }
 
+.post-btn {
+    transition: all 0.2s ease;
+}
+
+.post-btn:hover {
+    background: #259ad6;
+    color: black;
+    box-shadow: 0 0 10px #259ad6;
+    transform: translateY(-1px);
+}
+
 .post-card {
     margin-top: 12px;
     border-bottom: 1px solid #1e293b;
@@ -317,7 +403,7 @@ window.addEventListener('resize', checkMobile);
 }
 
 .post-user {
-    font-size: 13px;
+    font-size: 18px;
     color: #fdc134;
 }
 
@@ -349,8 +435,9 @@ window.addEventListener('resize', checkMobile);
 
 .right {
     display: grid;
-    grid-template-rows: auto auto;
+    grid-template-rows: auto 1fr;
     gap: 6px;
+    height: 100%;
 }
 
 .panel {
@@ -358,6 +445,9 @@ window.addEventListener('resize', checkMobile);
     background: rgba(0, 0, 0, 0.6);
     padding: 9px;
     box-shadow: 0 0 10px #259ad644;
+}
+.page > .panel:last-child {
+    min-height: 210px;  /* 🔥 makes it feel fuller */
 }
 
 .panel-title {
@@ -372,7 +462,10 @@ window.addEventListener('resize', checkMobile);
     display: grid;
     grid-template-columns: 1.3fr 0.9fr 1.2fr;
     gap: 12px;
+    height: 200px;
 }
+
+
 
 
 .schedule {
@@ -421,7 +514,7 @@ window.addEventListener('resize', checkMobile);
 .media-content img {
     width: 100%;
     height: 110px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #259ad6;
 }
 
@@ -454,7 +547,7 @@ window.addEventListener('resize', checkMobile);
 .media-content video {
     width: 100%;
     height: 120px;
-    object-fit: cover;
+    object-fit: contain;
     border: 1px solid #259ad6;
 }
 .alert-row {
@@ -605,7 +698,7 @@ window.addEventListener('resize', checkMobile);
     .media-content img,
     .media-content video {
         height: 180px;
-        object-fit: cover;
+        object-fit: contain;
     }
 
     .viewer-content {
@@ -677,17 +770,36 @@ window.addEventListener('resize', checkMobile);
 
     .mobile-tabs button {
         background: transparent;
-        border: 1px solid #259ad6;
-        color: #259ad6;
-        padding: 6px 10px;
-        cursor: pointer;
-        font-family: inherit;
+    border: 1px solid #259ad6;
+    color: #259ad6;
+    padding: 6px 10px;
+    cursor: pointer;
+    font-family: inherit;
+
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
     }
 
     .mobile-tabs button.active {
         background: #259ad6;
-        color: black;
+    color: black;
+    box-shadow: 0 0 10px #259ad6;
+    transform: scale(1.05);
     }
+
+    .mobile-tabs button::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: rgba(37,154,214,0.3);
+    opacity: 0;
+    transition: opacity 0.3s;
+}
+
+.mobile-tabs button:active::after {
+    opacity: 1;
+}
 
     .page {
         top: 130px; /* push below tabs */
@@ -717,6 +829,151 @@ window.addEventListener('resize', checkMobile);
         grid-row: 2 / 3;
     }
 }
+
+/* CAROUSEL IN POSTS */
+.carousel {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: black;
+    border: 1px solid #259ad6;
+    overflow: hidden;
+}
+
+.carousel-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+}
+
+/* DOTS */
+.dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: flex;
+    gap: 6px;
+}
+
+.dot {
+    width: 6px;
+    height: 6px;
+    background: rgba(255,255,255,0.4);
+    border-radius: 50%;
+}
+
+.dot.active {
+    background: white;
+}
+
+/* VIEWER */
+.viewer-content {
+    position: relative;
+}
+
+.nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 40px;
+    height: 40px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+
+    font-size: 22px;
+    cursor: pointer;
+}
+.nav:hover {
+    background: rgba(37,154,214,0.8);
+}
+
+.nav.left { left: 10px; }
+.nav.right { right: 10px; }
+
+/* VIEWER DOTS */
+.viewer-dots {
+    bottom: 20px;
+}
+
+/* DOWNLOAD BUTTON */
+.download-btn {
+    position: absolute;
+    top: 15px;
+    right: 15px;
+
+    background: white;
+    color: black;
+
+    padding: 6px 12px;
+    border-radius: 6px;
+
+    font-size: 13px;
+    font-weight: bold;
+    text-decoration: none;
+
+    cursor: pointer;
+}
+
+.media-content {
+    position: relative;
+}
+
+/* position dots nicely */
+.media-content .dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.gender-stat {
+    margin-top: 14px;
+}
+
+/* labels */
+.gender-labels {
+    display: flex;
+    justify-content: space-between;
+    font-size: 13px;
+    margin-bottom: 5px;
+}
+
+.boys {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+.girls {
+    color: #ffffff;
+    font-weight: bold;
+}
+
+/* bar */
+.gender-bar {
+    display: flex;
+    height: 8px;
+    background: #1e293b;
+    overflow: hidden;
+}
+
+.boys-bar {
+    background: #259ad6;
+}
+
+.girls-bar {
+    background: #fdc134;
+}
+
+
 </style>
 <div class="topbar">
     <div class="timer">
@@ -749,42 +1006,70 @@ window.addEventListener('resize', checkMobile);
         <div class="logs-header">
             <div class="panel-title">MISSION LOGS</div>
             <button class="post-btn" on:click={() => navigate('portal')}>
-                ＋ POST
+                LOGIN
             </button>
         </div>
 
         {#each posts as post}
-            <div class="post-card">
-                <div class="post-user">
-                    {post.user}
-                    <div style="font-size:10px; color:#64748b;">
-                        {new Date(post.created_at).toLocaleString()}
-                    </div>
-                </div>
-
-                {#if post.media && post.media.length > 0}
-                <div class="media-grid">
-                    {#each post.media.slice(0,5) as m, i}
-                        {#if m.match(/\.(mp4|webm|ogg)$/)}
-                            <video class="post-img" on:click={() => openViewer(post, i)} muted>
-                                <source src={m} />
-                            </video>
-                        {:else}
-                            <img class="post-img" src={m} on:click={() => openViewer(post, i)} />
-                        {/if}
-                    {/each}
-                </div>
-                {/if}
-
-                <div class="post-actions">
-                    <span on:click={() => likePost(post)}>❤️ {post.likes}</span>
-                </div>
-
-                <div class="post-caption">
-                    <strong>{post.user}</strong> {post.caption}
-                </div>
+    <div class="post-card">
+        <div class="post-user">
+            {post.user}
+            <div style="font-size:10px; color:#64748b;">
+                {new Date(post.created_at).toLocaleString()}
             </div>
-        {/each}
+        </div>
+
+{#if post.media && post.media.length > 0}
+
+<div 
+    class="carousel"
+    on:touchstart={handlePostTouchStart}
+    on:touchend={(e) => handlePostTouchEnd(e, post)}
+>
+
+    {#if post.media[(postIndexes[post.id] || 0)].match(/\.(mp4|webm|ogg)$/)}
+        <video 
+            class="carousel-img"
+            src={post.media[(postIndexes[post.id] || 0)]}
+            muted
+            on:click={() => openViewer(post, postIndexes[post.id] || 0)}
+        />
+    {:else}
+        <img 
+            class="carousel-img"
+            src={post.media[(postIndexes[post.id] || 0)]}
+            on:click={() => openViewer(post, postIndexes[post.id] || 0)}
+        />
+    {/if}
+
+    <!-- LEFT RIGHT BUTTONS (desktop) -->
+    {#if post.media.length > 1}
+        <button class="nav left" on:click={() => prevPostMedia(post.id, post.media.length)}>‹</button>
+        <button class="nav right" on:click={() => nextPostMedia(post.id, post.media.length)}>›</button>
+    {/if}
+
+    <!-- DOTS -->
+    {#if post.media.length > 1}
+<div class="dots">
+    {#each post.media.slice(0,5) as _, i}
+        <span class="dot {i === (postIndexes[post.id] || 0) ? 'active' : ''}"></span>
+    {/each}
+</div>
+{/if}
+
+</div>
+
+{/if}
+
+        <div class="post-actions">
+            <span on:click={() => likePost(post)}>❤️ {post.likes}</span>
+        </div>
+
+        <div class="post-caption">
+            <strong>{post.user}</strong> {post.caption}
+        </div>
+    </div>
+{/each}
 
     </div>
     {/if}
@@ -863,63 +1148,173 @@ window.addEventListener('resize', checkMobile);
             <div class="panel">
                 <div class="panel-title">CREW</div>
 
-                <div class="media-content">
-                    {#if crewImages.length > 0}
+                <div 
+    class="media-content"
+    on:touchstart={handleCrewTouchStart}
+    on:touchend={handleCrewTouchEnd}
+>
 
-                        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
-                            <video autoplay muted loop on:click={openCrewViewer}>
-                                <source src={crewImages[crewIndex].image_url} />
-                            </video>
-                        {:else}
-                            <img src={crewImages[crewIndex].image_url}
-                                 on:click={openCrewViewer} />
-                        {/if}
+    {#if crewImages.length > 0}
 
-                        <div class="crew-controls">
-                            <button on:click={prevCrew}>◀</button>
-                            <button on:click={nextCrew}>▶</button>
-                        </div>
+        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
+            <video autoplay muted loop on:click={openCrewViewer}>
+                <source src={crewImages[crewIndex].image_url} />
+            </video>
+        {:else}
+            <img 
+                src={crewImages[crewIndex].image_url}
+                on:click={openCrewViewer}
+            />
+        {/if}
 
-                        {#if crewImages[crewIndex].caption}
-                            <div style="text-align:center; margin-top:6px;">
-                                {crewImages[crewIndex].caption}
-                            </div>
-                        {/if}
-
-                    {/if}
-                </div>
-            </div>
-
+        <!-- ARROWS -->
+        <div class="crew-controls">
+            <button on:click={prevCrew}>◀</button>
+            <button on:click={nextCrew}>▶</button>
         </div>
 
-    </div>
-    {/if}
+       
 
-    <!-- ================= STATS ================= -->
-    {#if !isMobile || activeTab === 'stats'}
-    <div class="panel">
-
-        <div class="panel-title">MISSION STATS</div>
-
-        Sessions Completed: {completed} / {total}
-
-        <div class="progress-bar">
-            <div class="progress-fill"
-                 style="width:{total ? (completed/total)*100 : 0}%"></div>
-        </div>
-
-        <br>
-
-        <div class="panel-title">LEADING CREWS</div>
-
-        {#each teams as t}
-            <div class="leader">
-                <span>{t.team_name}</span>
-                <span>{t.points}</span>
+        {#if crewImages[crewIndex].caption}
+            <div style="text-align:center; margin-top:6px;">
+                {crewImages[crewIndex].caption}
             </div>
-        {/each}
+        {/if}
 
-    </div>
     {/if}
 
 </div>
+            </div>
+
+        </div>
+
+    </div>
+    {/if}
+
+<!-- ================= STATS ================= -->
+{#if !isMobile || activeTab === 'stats'}
+<div class="panel">
+
+    <div class="panel-title">MISSION STATS</div>
+
+    Sessions Completed: {completed} / {total}
+
+    <div class="progress-bar">
+        <div class="progress-fill"
+             style="width:{total ? (completed/total)*100 : 0}%"></div>
+    </div>
+
+    <!-- 🔥 NEW GENDER STATS -->
+    <div class="gender-stat">
+
+        <div class="gender-labels">
+    <div>
+        <span class="boys">Boys</span><br>
+        {boys}
+    </div>
+
+    <div style="text-align:right;">
+        <span class="girls">Girls</span><br>
+        {girls}
+    </div>
+</div>
+
+        <div class="gender-bar">
+            <div class="boys-bar" style="width:{boysPercent}%"></div>
+            <div class="girls-bar" style="width:{girlsPercent}%"></div>
+        </div>
+
+    </div>
+
+    <br>
+
+    <div class="panel-title">LEADING CREWS</div>
+
+    {#each teams as t}
+        <div class="leader">
+            <span>{t.team_name}</span>
+            <span>{t.points}</span>
+        </div>
+    {/each}
+
+</div>
+{/if}
+
+</div>
+{#if selectedPost}
+<div 
+    class="viewer"
+    on:click={closeViewer}
+    on:touchstart={handleTouchStart}
+    on:touchend={handleTouchEnd}
+>
+    <div class="viewer-content" on:click|stopPropagation>
+
+        <!-- MEDIA -->
+        {#if selectedPost.media[viewerIndex].match(/\.(mp4|webm|ogg)$/)}
+            <video controls autoplay>
+                <source src={selectedPost.media[viewerIndex]} />
+            </video>
+        {:else}
+            <img src={selectedPost.media[viewerIndex]} />
+        {/if}
+
+        <!-- LEFT RIGHT NAV -->
+        {#if selectedPost.media.length > 1}
+        <button class="nav left" on:click={prevMedia}>‹</button>
+        <button class="nav right" on:click={nextMedia}>›</button>
+        {/if}
+
+        <!-- DOTS -->
+        <div class="dots viewer-dots">
+            {#each selectedPost.media as _, i}
+                <span class="dot {i === viewerIndex ? 'active' : ''}"></span>
+            {/each}
+        </div>
+
+        <!-- DOWNLOAD -->
+        <a href={selectedPost.media[viewerIndex]} download target="_blank" class="download-btn">
+            ⬇ DOWNLOAD
+        </a>
+
+    </div>
+</div>
+{/if}
+
+{#if showCrewViewer}
+<div 
+    class="viewer"
+    on:click={closeCrewViewer}
+    on:touchstart={handleCrewTouchStart}
+    on:touchend={handleCrewTouchEnd}
+>
+    <div class="viewer-content" on:click|stopPropagation>
+
+        <!-- MEDIA -->
+        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
+            <video controls autoplay>
+                <source src={crewImages[crewIndex].image_url} />
+            </video>
+        {:else}
+            <img src={crewImages[crewIndex].image_url} />
+        {/if}
+
+        <!-- NAV -->
+        {#if crewImages.length > 1}
+            <button class="nav left" on:click={prevCrew}>‹</button>
+            <button class="nav right" on:click={nextCrew}>›</button>
+        {/if}
+
+        <!-- DOWNLOAD -->
+        <a 
+            href={crewImages[crewIndex].image_url} 
+            download 
+            target="_blank"
+            class="download-btn"
+        >
+            Download
+        </a>
+
+    </div>
+</div>
+{/if}
