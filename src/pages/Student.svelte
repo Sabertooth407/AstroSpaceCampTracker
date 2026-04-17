@@ -6,13 +6,12 @@
     let activity = '';
     let content = '';
     let files = [];
-    let loading = false; // ✅ prevent double submit
+    let loading = false; 
 
     async function submitPost() {
-        if (loading) return; // 🚫 block duplicate clicks
+        if (loading) return;
         loading = true;
 
-        // ✅ capture values immediately (fixes "Crew + Name" issue)
         const finalName = name.trim() || "Crew";
         const finalActivity = activity;
         const finalContent = content;
@@ -56,13 +55,33 @@
 
         alert("Post sent");
 
-        // ✅ reset after everything finishes
         name = '';
         activity = '';
         content = '';
         files = [];
         loading = false;
     }
+
+    let myPosts = [];
+
+async function fetchMyPosts() {
+    const { data } = await supabase
+        .from('posts')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+    myPosts = data || [];
+}
+
+import { onMount } from 'svelte';
+
+onMount(() => {
+    fetchMyPosts();
+});
+function removeFile(index) {
+    files = files.filter((_, i) => i !== index);
+}
+
 </script>
 
 <style>
@@ -84,6 +103,7 @@ button {
     background: #259ad6;
     border: none;
     cursor: pointer;
+    color: white;
 }
 
 button:disabled {
@@ -119,6 +139,62 @@ button:disabled {
         width: 100%;
     }
 }
+
+.previous-posts {
+    margin-top: 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.prev-card {
+    border: 1px solid #259ad6;
+    padding: 8px;
+}
+
+.prev-user {
+    font-weight: bold;
+    color: #fdc134;
+}
+
+.prev-content {
+    font-size: 12px;
+    margin-top: 4px;
+}
+
+.prev-media {
+    display: flex;
+    gap: 4px;
+    margin-top: 6px;
+}
+
+.prev-media img,
+.prev-media video {
+    width: 60px;
+    height: 60px;
+    object-fit: cover;
+}
+
+.preview-item {
+    position: relative;
+}
+
+.remove-btn {
+    position: absolute;
+    top: 4px;
+    right: 4px;
+
+    background: rgba(0,0,0,0.7);
+    color: white;
+    border: none;
+
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+
+    font-size: 12px;
+    cursor: pointer;
+}
 </style>
 
 <div class="container">
@@ -129,23 +205,32 @@ button:disabled {
     <textarea placeholder="Write your log..." bind:value={content}></textarea>
 
     <input type="file" multiple accept="image/*,video/*"
-        on:change={(e) => files = Array.from(e.target.files).slice(0,5)} />
+        on:change={(e) => {
+    const newFiles = Array.from(e.target.files);
+    files = [...files, ...newFiles].slice(0, 5);
+}} />
 
     {#if files.length > 0}
         <div class="preview">
-            {#each files as f}
-                {#if f.type.startsWith('video')}
-                    <video muted>
-                        <source src={URL.createObjectURL(f)} />
-                    </video>
-                {:else}
-                    <img src={URL.createObjectURL(f)} />
-                {/if}
-            {/each}
+    {#each files as f, i}
+        <div class="preview-item">
+
+            {#if f.type.startsWith('video')}
+                <video muted>
+                    <source src={URL.createObjectURL(f)} />
+                </video>
+            {:else}
+                <img src={URL.createObjectURL(f)} />
+            {/if}
+
+            <!-- ❌ REMOVE BUTTON -->
+            <button class="remove-btn" on:click={() => removeFile(i)}>✕</button>
+
         </div>
+    {/each}
+</div>
     {/if}
 
-    <!-- ✅ button lock + feedback -->
     <button on:click={submitPost} disabled={loading}>
         {loading ? "Posting..." : "Submit"}
     </button>
@@ -155,4 +240,27 @@ button:disabled {
     <button on:click={() => navigate('lander')}>
         ← Back
     </button>
+</div>
+
+<h3 style="margin-top:20px;">YOUR POSTS</h3>
+
+<div class="previous-posts">
+    {#each myPosts as p}
+        <div class="prev-card">
+            <div class="prev-user">{p.user_name}</div>
+            <div class="prev-content">{p.content}</div>
+
+            {#if p.media_urls && p.media_urls.length}
+                <div class="prev-media">
+                    {#each p.media_urls.slice(0,3) as m}
+                        {#if m.match(/\.(mp4|webm|ogg)$/)}
+                            <video src={m} muted></video>
+                        {:else}
+                            <img src={m} />
+                        {/if}
+                    {/each}
+                </div>
+            {/if}
+        </div>
+    {/each}
 </div>

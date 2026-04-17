@@ -252,11 +252,11 @@ function handleCrewTouchEnd(e) {
     let endX = e.changedTouches[0].screenX;
 
     if (crewStartX - endX > 50) {
-        nextCrew(); // swipe left
+        nextCrew(); 
     }
 
     if (endX - crewStartX > 50) {
-        prevCrew(); // swipe right
+        prevCrew(); 
     }
 }
 
@@ -327,7 +327,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     filter: drop-shadow(0 0 6px #259ad68e);
 }
 
-/* PAGE */
+
 .page {
     position: fixed;
     top: 90px;
@@ -447,7 +447,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     box-shadow: 0 0 10px #259ad644;
 }
 .page > .panel:last-child {
-    min-height: 210px;  /* 🔥 makes it feel fuller */
+    min-height: 210px; 
 }
 
 .panel-title {
@@ -802,7 +802,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 }
 
     .page {
-        top: 130px; /* push below tabs */
+        top: 130px; 
     }
 }
 
@@ -822,15 +822,12 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
         grid-column: 2 / 3;
         grid-row: 1 / 2;
     }
-
-    /* 👇 THIS FIXES YOUR PROBLEM */
     .page > .panel:last-child {
         grid-column: 2 / 3;
         grid-row: 2 / 3;
     }
 }
 
-/* CAROUSEL IN POSTS */
 .carousel {
     position: relative;
     width: 100%;
@@ -846,7 +843,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     object-fit: contain;
 }
 
-/* DOTS */
 .dots {
     position: absolute;
     bottom: 8px;
@@ -867,7 +863,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     background: white;
 }
 
-/* VIEWER */
 .viewer-content {
     position: relative;
 }
@@ -899,12 +894,11 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 .nav.left { left: 10px; }
 .nav.right { right: 10px; }
 
-/* VIEWER DOTS */
 .viewer-dots {
     bottom: 20px;
 }
 
-/* DOWNLOAD BUTTON */
+
 .download-btn {
     position: absolute;
     top: 15px;
@@ -927,7 +921,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     position: relative;
 }
 
-/* position dots nicely */
 .media-content .dots {
     position: absolute;
     bottom: 8px;
@@ -939,7 +932,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     margin-top: 14px;
 }
 
-/* labels */
 .gender-labels {
     display: flex;
     justify-content: space-between;
@@ -957,7 +949,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     font-weight: bold;
 }
 
-/* bar */
 .gender-bar {
     display: flex;
     height: 8px;
@@ -975,8 +966,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 
 @media (min-width: 769px) {
     .page > .panel:last-child {
-       /* fill allocated grid space */
-        overflow-y: auto;      /* 🔥 scroll inside */
+        overflow-y: auto;      
     }
 }
 
@@ -996,7 +986,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     </div>
 </div>
 
-<!-- MOBILE TABS -->
+
 <div class="mobile-tabs">
     <button class:active={activeTab === 'posts'} on:click={() => activeTab = 'posts'}>Logs</button>
     <button class:active={activeTab === 'live'} on:click={() => activeTab = 'live'}>Live</button>
@@ -1005,7 +995,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 
 <div class="page">
 
-    <!-- ================= POSTS ================= -->
     {#if !isMobile || activeTab === 'posts'}
     <div class="posts panel">
 
@@ -1035,11 +1024,14 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 
     {#if post.media[(postIndexes[post.id] || 0)].match(/\.(mp4|webm|ogg)$/)}
         <video 
-            class="carousel-img"
-            src={post.media[(postIndexes[post.id] || 0)]}
-            muted
-            on:click={() => openViewer(post, postIndexes[post.id] || 0)}
-        />
+    class="carousel-img"
+    src={post.media[(postIndexes[post.id] || 0)]}
+    autoplay
+    muted
+    loop
+    playsinline
+    on:click={() => openViewer(post, postIndexes[post.id] || 0)}
+/>
     {:else}
         <img 
             class="carousel-img"
@@ -1048,13 +1040,11 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
         />
     {/if}
 
-    <!-- LEFT RIGHT BUTTONS (desktop) -->
     {#if post.media.length > 1}
         <button class="nav left" on:click={() => prevPostMedia(post.id, post.media.length)}>‹</button>
         <button class="nav right" on:click={() => nextPostMedia(post.id, post.media.length)}>›</button>
     {/if}
 
-    <!-- DOTS -->
     {#if post.media.length > 1}
 <div class="dots">
     {#each post.media.slice(0,5) as _, i}
@@ -1080,13 +1070,11 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     </div>
     {/if}
 
-    <!-- ================= LIVE (RIGHT PANEL) ================= -->
     {#if !isMobile || activeTab === 'live'}
     <div class="right">
 
         <div class="top-row">
 
-            <!-- SCHEDULE -->
             <div class="panel">
                 <div class="panel-title">FULL SCHEDULE</div>
                 <div class="schedule">
@@ -1119,7 +1107,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
                 </div>
             </div>
 
-            <!-- CURRENT + ALERT -->
             <div class="current-two-panels">
 
                 <div class="panel">
@@ -1150,7 +1137,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 
             </div>
 
-            <!-- CREW -->
             <div class="panel">
                 <div class="panel-title">CREW</div>
 
@@ -1173,7 +1159,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
             />
         {/if}
 
-        <!-- ARROWS -->
         <div class="crew-controls">
             <button on:click={prevCrew}>◀</button>
             <button on:click={nextCrew}>▶</button>
@@ -1197,7 +1182,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     </div>
     {/if}
 
-<!-- ================= STATS ================= -->
 {#if !isMobile || activeTab === 'stats'}
 <div class="panel">
 
@@ -1210,7 +1194,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
              style="width:{total ? (completed/total)*100 : 0}%"></div>
     </div>
 
-    <!-- 🔥 NEW GENDER STATS -->
     <div class="gender-stat">
 
         <div class="gender-labels">
@@ -1256,29 +1239,25 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 >
     <div class="viewer-content" on:click|stopPropagation>
 
-        <!-- MEDIA -->
         {#if selectedPost.media[viewerIndex].match(/\.(mp4|webm|ogg)$/)}
-            <video controls autoplay>
+            <video controls autoplay playsinline on:loadeddata={(e) => e.target.muted = false}>
                 <source src={selectedPost.media[viewerIndex]} />
             </video>
         {:else}
             <img src={selectedPost.media[viewerIndex]} />
         {/if}
 
-        <!-- LEFT RIGHT NAV -->
         {#if selectedPost.media.length > 1}
         <button class="nav left" on:click={prevMedia}>‹</button>
         <button class="nav right" on:click={nextMedia}>›</button>
         {/if}
 
-        <!-- DOTS -->
         <div class="dots viewer-dots">
             {#each selectedPost.media as _, i}
                 <span class="dot {i === viewerIndex ? 'active' : ''}"></span>
             {/each}
         </div>
 
-        <!-- DOWNLOAD -->
         <a href={selectedPost.media[viewerIndex]} download target="_blank" class="download-btn">
             ⬇ DOWNLOAD
         </a>
@@ -1296,7 +1275,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 >
     <div class="viewer-content" on:click|stopPropagation>
 
-        <!-- MEDIA -->
         {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
             <video controls autoplay>
                 <source src={crewImages[crewIndex].image_url} />
@@ -1305,13 +1283,11 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
             <img src={crewImages[crewIndex].image_url} />
         {/if}
 
-        <!-- NAV -->
         {#if crewImages.length > 1}
             <button class="nav left" on:click={prevCrew}>‹</button>
             <button class="nav right" on:click={nextCrew}>›</button>
         {/if}
 
-        <!-- DOWNLOAD -->
         <a 
             href={crewImages[crewIndex].image_url} 
             download 

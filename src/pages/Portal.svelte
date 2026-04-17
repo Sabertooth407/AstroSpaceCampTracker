@@ -84,10 +84,14 @@ button {
     <div class="box">
         <h3>LOGIN</h3>
 
-        <input placeholder="Email" bind:value={email} />
-        <input type="password" placeholder="Password" bind:value={password} />
+        <form on:submit|preventDefault={handleLogin}>
 
-        <button on:click={handleLogin}>Login</button>
+    <input placeholder="Email" bind:value={email} />
+    <input type="password" placeholder="Password" bind:value={password} />
+
+    <button type="submit">Login</button>
+
+</form>
 
         <button class="back" on:click={() => navigate('lander')}>
             ← Back
