@@ -973,6 +973,12 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     background: #fdc134;
 }
 
+@media (min-width: 769px) {
+    .page > .panel:last-child {
+       /* fill allocated grid space */
+        overflow-y: auto;      /* 🔥 scroll inside */
+    }
+}
 
 </style>
 <div class="topbar">
