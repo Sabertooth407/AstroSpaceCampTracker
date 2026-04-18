@@ -63,59 +63,63 @@ async function checkAndSend() {
 
   // 🔔 NEW POSTS
   const { data: posts } = await supabase
+  .from('posts')
+  .select('*')
+  .eq('status', 'approved')
+  .eq('notified', false);
+
+for (const p of posts || []) {
+  await sendToAll({
+    title: "📸 New Mission Log",
+    body: p.content || "New post uploaded",
+    url: "https://astro-space-camp-tracker.vercel.app/"
+  });
+
+  // mark as notified immediately
+  await supabase
     .from('posts')
-    .select('*')
-    .eq('notified', false)
-    .eq('status', 'approved'); 
-
-  for (const p of posts || []) {
-    await sendToAll({
-      title: "📸 New Mission Log",
-      body: p.content || "New post uploaded"
-    });
-
-    await supabase
-      .from('posts')
-      .update({ notified: true })
-      .eq('id', p.id);
-  }
+    .update({ notified: true })
+    .eq('id', p.id);
+}
 
   // 🚨 ALERTS
   const { data: alerts } = await supabase
+  .from('alerts')
+  .select('*')
+  .eq('notified', false);
+
+for (const a of alerts || []) {
+  await sendToAll({
+    title: "🚨 Alert",
+    body: a.text || "New alert",
+    url: "https://astro-space-camp-tracker.vercel.app/"
+  });
+
+  await supabase
     .from('alerts')
-    .select('*')
-    .eq('notified', false);
-
-  for (const a of alerts || []) {
-    await sendToAll({
-      title: "🚨 Alert",
-      body: a.text || "New alert"
-    });
-
-    await supabase
-      .from('alerts')
-      .update({ notified: true })
-      .eq('id', a.id);
-  }
+    .update({ notified: true })
+    .eq('id', a.id);
+}
 
   // 📡 SESSION LIVE
   const { data: sessions } = await supabase
+  .from('schedule')
+  .select('*')
+  .eq('status', 'ongoing')
+  .eq('notified', false);
+
+for (const s of sessions || []) {
+  await sendToAll({
+    title: "📡 Session Live",
+    body: s.session_name || "Session started",
+    url: "https://astro-space-camp-tracker.vercel.app"
+  });
+
+  await supabase
     .from('schedule')
-    .select('*')
-    .eq('status', 'ongoing')
-    .eq('notified', false);
-
-  for (const s of sessions || []) {
-    await sendToAll({
-      title: "📡 Session Live",
-      body: s.session_name || "Session started"
-    });
-
-    await supabase
-      .from('schedule')
-      .update({ notified: true })
-      .eq('id', s.id);
-  }
+    .update({ notified: true })
+    .eq('id', s.id);
+}
 }
 
 // ⏱ RUN LOOP
