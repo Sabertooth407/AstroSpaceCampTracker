@@ -267,6 +267,8 @@ let girls = 12;
 $: totalPeople = boys + girls;
 $: boysPercent = totalPeople ? (boys / totalPeople) * 100 : 0;
 $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
+let todayCompleted = scheduleData.filter(s => s.day === currentDay && s.status === 'done').length;
+let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 </script>
 
 
@@ -277,6 +279,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     font-family: 'Orbitron', sans-serif;
 }
 
+/* ================= TOPBAR ================= */
 
 .topbar {
     position: fixed;
@@ -327,6 +330,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     filter: drop-shadow(0 0 6px #259ad68e);
 }
 
+/* ================= MAIN GRID ================= */
 
 .page {
     position: fixed;
@@ -336,38 +340,77 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     bottom: 0;
 
     display: grid;
-    grid-template-columns: 1.2fr 2fr;
+
+    /* FIXED: wider posts */
+    grid-template-columns: 2.4fr 1.2fr 1.2fr 1fr;
+
+    grid-template-rows: auto 1fr;
+
     gap: 12px;
     padding: 12px;
 
     overflow: hidden;
-    
+    isolation: isolate;
 }
 
+/* ================= PANELS ================= */
+
+.panel {
+    border: 2px solid #259ad6;
+    background: rgba(0, 0, 0, 0.6);
+    padding: 9px;
+    box-shadow: 0 0 10px #259ad644;
+
+    /* CRITICAL FIX */
+    min-height: 0;
+}
+
+
+.panel-title {
+    color: #259ad6;
+    font-size: 14px;
+    letter-spacing: 2px;
+    margin-bottom: 10px;
+    font-family: GoodTimes, serif;
+}
+
+/* ================= GRID PLACEMENT ================= */
 
 .posts {
     overflow-y: auto;
+    grid-column: 1 / 2;
+    grid-row: 1 / 3;
 }
 
-@media (max-width: 768px) {
-    .posts {
-        min-height: 60vh;
-    }
-
-    .post-card {
-        padding: 10px;
-        border: 1px solid #259ad6;
-        border-radius: 6px;
-        margin-bottom: 12px;
-    }
-
-    .post-img {
-        width: 100%;
-        height: auto;
-        max-height: 300px;
-        object-fit: cover;
-    }
+.schedule-panel {
+    grid-column: 2 / 3;
+    grid-row: 1 / 2;
+    min-height: 0;
 }
+
+.session-stack {
+    grid-column: 3 / 4;
+    grid-row: 1 / 2;
+
+    /* FIXED: equal height with schedule */
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    gap: 12px;
+    height: 100%;
+}
+
+.stats-panel {
+    grid-column: 4 / 5;
+    grid-row: 1 / 3;
+    overflow-y: auto;
+}
+
+.crew-panel {
+    grid-column: 2 / 4;
+    grid-row: 2 / 3;
+}
+
+/* ================= POSTS ================= */
 
 .logs-header {
     display: flex;
@@ -383,9 +426,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     padding: 4px 10px;
     cursor: pointer;
     margin-right: 8px;
-}
-
-.post-btn {
     transition: all 0.2s ease;
 }
 
@@ -416,57 +456,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     background: black;
 }
 
-.post-actions {
-    display: flex;
-    gap: 12px;
-    margin-top: 6px;
-    cursor: pointer;
-}
-
-.post-caption {
-    font-size: 13px;
-    margin-top: 6px;
-}
-
-.post-comments {
-    font-size: 12px;
-    color: #94a3b8;
-}
-
-.right {
-    display: grid;
-    grid-template-rows: auto 1fr;
-    gap: 6px;
-    height: 100%;
-}
-
-.panel {
-    border: 2px solid #259ad6;
-    background: rgba(0, 0, 0, 0.6);
-    padding: 9px;
-    box-shadow: 0 0 10px #259ad644;
-}
-.page > .panel:last-child {
-    min-height: 210px; 
-}
-
-.panel-title {
-    color: #259ad6;
-    font-size: 14px;
-    letter-spacing: 2px;
-    margin-bottom: 10px;
-    font-family: GoodTimes, serif;
-}
-
-.top-row {
-    display: grid;
-    grid-template-columns: 1.3fr 0.9fr 1.2fr;
-    gap: 12px;
-    height: 200px;
-}
-
-
-
+/* ================= SCHEDULE ================= */
 
 .schedule {
     overflow-y: auto;
@@ -478,7 +468,6 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     align-items: center;
     margin-bottom: 6px;
     font-size: 13px;
-
 }
 
 .schedule-item.ongoing .status-icon {
@@ -488,17 +477,14 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 @keyframes blink {
     50% { opacity: 0.3; }
 }
+
 .status-icon { width: 20px; }
 
 .schedule-item.done { color: #22c55e; }
 .schedule-item.ongoing { color: #fdc134; }
 .schedule-item.cancelled { color: #ef4444; }
 
-.current-two-panels {
-    display: grid;
-    grid-template-rows: 1fr 1fr;
-    gap: 12px;
-}
+/* ================= SESSION ================= */
 
 .session-name {
     font-size: 18px;
@@ -510,46 +496,8 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
     color: #259ad6;
 }
 
+/* ================= ALERT ================= */
 
-.media-content img {
-    width: 100%;
-    height: 110px;
-    object-fit: contain;
-    border: 1px solid #259ad6;
-}
-
-
-.progress-bar {
-    height: 8px;
-    background: #1e293b;
-    margin-top: 10px;
-}
-
-.progress-fill {
-    height: 100%;
-    background: #fdc134;
-}
-
-.leader {
-    display: flex;
-    justify-content: space-between;
-}
-
-.alert-blink {
-    animation: blink 1s infinite;
-    color: #fdc134;
-}
-
-@keyframes blink {
-    50% { opacity: 0.3; }
-}
-
-.media-content video {
-    width: 100%;
-    height: 120px;
-    object-fit: contain;
-    border: 1px solid #259ad6;
-}
 .alert-row {
     display: flex;
     gap: 10px;
@@ -560,153 +508,321 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 .alert-icon {
     animation: blink 1s infinite;
     color: #fdc134;
-    flex-shrink: 0;
 }
 
 .alert-text {
-    height: 60px;             
-    overflow-y: auto;          
-    overflow-x: hidden;
+    height: 60px;
+    overflow-y: auto;
     font-size: 22px;
     color: #fdc134;
-    line-height: 1.4;
-    word-break: break-word; 
 }
 
-.media-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 6px;
+/* ================= MEDIA ================= */
+
+.carousel {
+    position: relative;
+    width: 100%;
+    height: 220px;
+    background: black;
+    border: 1px solid #259ad6;
+    overflow: hidden;
 }
+
+.nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+
+    width: 38px;
+    height: 38px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+
+    font-size: 20px;
+    cursor: pointer;
+
+    z-index: 20;
+
+    transition: all 0.25s ease;
+}
+
+/* LEFT */
+.nav.left {
+    left: 10px;
+}
+
+/* RIGHT */
+.nav.right {
+    right: 10px;
+}
+
+/* HOVER EFFECT */
+.nav:hover {
+    background: rgba(37,154,214,0.9);
+    transform: translateY(-50%) scale(1.15);
+    box-shadow: 0 0 12px #259ad6;
+}
+
+/* CLICK FEEDBACK */
+.nav:active {
+    transform: translateY(-50%) scale(0.95);
+}
+.dots {
+    position: absolute;
+    bottom: 8px;
+    left: 50%;
+    transform: translateX(-50%);
+
+    display: flex;
+    gap: 6px;
+
+    z-index: 99999999;
+}
+
+.dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+
+    background: rgba(255,255,255,0.5);
+}
+
+.dot.active {
+    background: white;
+    box-shadow: 0 0 6px white;
+}
+
+
+.carousel img,
+.carousel video {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+
+    display: block; /* removes inline spacing issues */
+}
+.carousel img,
+.carousel video {
+    position: relative;
+    z-index: 1;
+}
+
+.download-btn {
+    position: absolute;
+    top: 12px;
+    right: 12px;
+
+    background: rgba(255,255,255,0.9);
+    color: black;
+
+    padding: 6px 10px;
+    border-radius: 6px;
+
+    font-size: 12px;
+    font-weight: bold;
+
+    text-decoration: none;
+
+    z-index: 6;
+}
+/* ================= STATS ================= */
+
+.progress-bar {
+    height: 10px;
+    background: #1e293b;
+    margin-top: 10px;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #fdc134;
+}
+
+.stats-panel {
+    font-size: 13px;
+    line-height: 1.3;
+}
+
+.leader {
+    display: flex;
+    justify-content: space-between;
+    margin: 4px;
+    font-size: 13px;
+}
+
+.leader span:first-child {
+    flex: 1;
+    word-break: break-word;
+}
+
+.leader span:last-child {
+    flex-shrink: 0;
+}
+
+.gender-bar {
+    display: flex;
+    height: 10px;
+    background: #1e293b;
+    overflow: hidden;
+}
+
+.boys-bar {
+    background: #259ad6;
+    height: 100%;
+}
+
+.girls-bar {
+    background: #fdc134;
+    height: 100%;
+}
+
+.gender-labels {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-end; /* 🔥 KEY FIX */
+    margin-bottom: 6px;
+    margin-top: 10px;
+}
+
+.gender-col {
+    display: flex;
+    flex-direction: column;
+}
+
+.gender-col.right {
+    text-align: right;
+}
+
+
+.value {
+    font-weight: bold;
+    color: white;
+}
+/* ================= VIEWER ================= */
 
 .viewer {
     position: fixed;
-    inset: 0;
-    background: rgba(0,0,0,0.9);
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+
+    background: rgba(0,0,0,0.95);
+
     display: flex;
     justify-content: center;
     align-items: center;
-    z-index: 999;
+
+    z-index: 99999;
+}
+
+
+.viewer img,
+.viewer video {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
 }
 
 .viewer-content {
     max-width: 80%;
     max-height: 80%;
     overflow-y: auto;
-    text-align: center;
+    position: relative;
 }
 
-.viewer img,
-.viewer video {
-    max-width: 100%;
-    max-height: 60vh;
-    margin-bottom: 10px;
-}
+.media-content {
+    position: relative;
+    width: 100%;
+    height: 220px;
 
-.viewer-controls {
     display: flex;
+    flex-direction: column;
     justify-content: center;
-    gap: 10px;
-    margin-bottom: 10px;
+    align-items: center;
+
+    overflow: hidden;
 }
 
-.viewer button {
-    padding: 6px 10px;
-    cursor: pointer;
+.media-content img,
+.media-content video {
+    max-width: 100%;
+    max-height: 200px;
+    object-fit: contain;
 }
 
-.viewer-text {
-    color: white;
+.crew-caption {
+    position: absolute;
+    bottom: 32px; /* sits above dots */
+
+    left: 50%;
+    transform: translateX(-50%);
+
+    width: 90%;
+    text-align: center;
+
     font-size: 14px;
+    color: white;
+
+    z-index: 20;
+
+    /* readability */
+    background: rgba(0,0,0,0.4);
+    padding: 4px 8px;
+    border-radius: 6px;
 }
 .crew-controls {
-    display: flex;
-    justify-content: center;
-    gap: 5px;
     margin-top: 6px;
 }
-
-.crew-controls button {
-    padding: 1px 2px;
-    cursor: pointer;
+.carousel {
+    touch-action: pan-y;
 }
+
+.viewer {
+    touch-action: none;
+}
+
+.media-content img,
+.media-content video {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+}
+
+/* ================= MOBILE ================= */
+
 
 @media (max-width: 768px) {
 
-    .topbar {
+    .schedule-panel {
+        height: 250px !important;   /* 👈 fixed height box */
         display: flex;
         flex-direction: column;
-        align-items: center;
-        padding: 6px;
-        gap: 4px;
-        border-bottom: 3px solid #259ad6;
     }
 
-    .title {
-        order: 1;
-        font-size: 24px;
-        letter-spacing: 2px;
-    }
 
-    .timer {
-        order: 3;
-        font-size: 12px;
-    }
-
-    .logo {
-        order:2;
-        justify-content: center;
-    }
-
-    .logo img {
-        height: 22px;
-    }
-
-    .page {
-        position: absolute;
-        top: 80px;
-        display: flex;
-        flex-direction: column;
+    .schedule {
+        flex: 1;
         overflow-y: auto;
+        max-height: 250px;  
     }
 
-    .right {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .top-row {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .current-two-panels {
-        display: flex;
-        flex-direction: column;
-    }
-
-    .post-img {
-        height: auto;
-        max-height: 250px;
-        object-fit: cover;
-    }
-
-    .media-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .media-content img,
-    .media-content video {
-        height: 180px;
-        object-fit: contain;
-    }
-
-    .viewer-content {
-        max-width: 95%;
-        max-height: 90%;
-    }
+    .schedule-item {
+    word-break: break-word;
+    overflow-wrap: anywhere;
 }
 
+}
+.mobile-tabs {
+    display: none;
+}
 
 @media (max-width: 768px) {
 
@@ -715,22 +831,21 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
         grid-template-columns: 1fr auto;
         grid-template-rows: auto auto;
         align-items: center;
+        position: relative;
         padding: 8px 10px;
         border-bottom: 3px solid #259ad6;
         row-gap: 4px;
     }
 
-
     .title {
-        grid-column: 1 / 2;
+        grid-column: 1 / 3;
         grid-row: 1 / 2;
-        font-size: 22px;
-        letter-spacing: 2px;
+        font-size: 23px;
         text-align: left;
+        letter-spacing: 1px;
     }
 
-  
-    .logo {
+     .logo {
         grid-column: 1 / 2;
         grid-row: 2 / 3;
         justify-content: flex-start;
@@ -748,21 +863,15 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
         align-self: center;
         white-space: nowrap;
     }
-}
 
-.mobile-tabs {
-    display: none;
-}
-
-@media (max-width: 768px) {
     .mobile-tabs {
         display: flex;
         justify-content: space-around;
         padding: 6px;
         background: rgba(0,0,0,0.9);
         border-bottom: 2px solid #259ad6;
-        position: fixed;
-        top: 80px;
+        position: relative;
+        top: 10px;
         left: 0;
         right: 0;
         z-index: 20;
@@ -770,213 +879,64 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 
     .mobile-tabs button {
         background: transparent;
-    border: 1px solid #259ad6;
-    color: #259ad6;
-    padding: 6px 10px;
-    cursor: pointer;
-    font-family: inherit;
+        border: 1px solid #259ad6;
+        color: #259ad6;
 
-    transition: all 0.25s ease;
-    position: relative;
-    overflow: hidden;
+        padding: 6px 10px;
+        cursor: pointer;
+
+        font-family: inherit;
+
+        transition: all 0.25s ease;
+        position: relative;
+        overflow: hidden;
     }
 
-    .mobile-tabs button.active {
+     .mobile-tabs button.active {
         background: #259ad6;
-    color: black;
-    box-shadow: 0 0 10px #259ad6;
-    transform: scale(1.05);
+        color: black;
+        box-shadow: 0 0 10px #259ad6;
+        transform: scale(1.05);
     }
 
     .mobile-tabs button::after {
-    content: '';
-    position: absolute;
-    inset: 0;
-    background: rgba(37,154,214,0.3);
-    opacity: 0;
-    transition: opacity 0.3s;
-}
+        content: '';
+        position: absolute;
+        inset: 0;
+        background: rgba(37,154,214,0.3);
+        opacity: 0;
+        transition: opacity 0.3s;
+    }
 
-.mobile-tabs button:active::after {
-    opacity: 1;
-}
+    .mobile-tabs button:active::after {
+        opacity: 1;
+    }
 
     .page {
-        top: 130px; 
-    }
-}
+        position: relative;
+        top: 20px;
+        bottom: auto;
+        left: 0;
+        right: 0;
 
-@media (min-width: 769px) {
-    .page {
-        display: grid;
-        grid-template-columns: 1.2fr 2fr;
-        grid-template-rows: auto auto;
-    }
+        display: flex;
+        flex-direction: column;
 
-    .posts {
-        grid-column: 1 / 2;
-        grid-row: 1 / 3;
+        overflow-y: auto;
+        gap: 12px;
+        padding: 12px;
     }
 
-    .right {
-        grid-column: 2 / 3;
-        grid-row: 1 / 2;
-    }
-    .page > .panel:last-child {
-        grid-column: 2 / 3;
-        grid-row: 2 / 3;
-    }
+    .posts { order: 1 !important; }
+
+    .schedule-panel { order: 2 !important; }
+
+    .session-stack { order: 3 !important; }
+
+    .crew-panel { order: 4 !important; }
+.stats-panel { order: 5 !important; }
 }
 
-.carousel {
-    position: relative;
-    width: 100%;
-    height: 220px;
-    background: black;
-    border: 1px solid #259ad6;
-    overflow: hidden;
-}
-
-.carousel-img {
-    width: 100%;
-    height: 100%;
-    object-fit: contain;
-}
-
-.dots {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-    display: flex;
-    gap: 6px;
-}
-
-.dot {
-    width: 6px;
-    height: 6px;
-    background: rgba(255,255,255,0.4);
-    border-radius: 50%;
-}
-
-.dot.active {
-    background: white;
-}
-
-.viewer-content {
-    position: relative;
-}
-
-.nav {
-    position: absolute;
-    top: 50%;
-    transform: translateY(-50%);
-
-    width: 40px;
-    height: 40px;
-
-    display: flex;
-    align-items: center;
-    justify-content: center;
-
-    background: rgba(0,0,0,0.5);
-    color: white;
-    border: none;
-    border-radius: 50%;
-
-    font-size: 22px;
-    cursor: pointer;
-}
-.nav:hover {
-    background: rgba(37,154,214,0.8);
-}
-
-.nav.left { left: 10px; }
-.nav.right { right: 10px; }
-
-.viewer-dots {
-    bottom: 20px;
-}
-
-
-.download-btn {
-    position: absolute;
-    top: 15px;
-    right: 15px;
-
-    background: white;
-    color: black;
-
-    padding: 6px 12px;
-    border-radius: 6px;
-
-    font-size: 13px;
-    font-weight: bold;
-    text-decoration: none;
-
-    cursor: pointer;
-}
-
-.media-content {
-    position: relative;
-}
-
-.media-content .dots {
-    position: absolute;
-    bottom: 8px;
-    left: 50%;
-    transform: translateX(-50%);
-}
-
-.gender-stat {
-    margin-top: 14px;
-}
-
-.gender-labels {
-    display: flex;
-    justify-content: space-between;
-    font-size: 13px;
-    margin-bottom: 5px;
-}
-
-.boys {
-    color: #ffffff;
-    font-weight: bold;
-}
-
-.girls {
-    color: #ffffff;
-    font-weight: bold;
-}
-
-.gender-bar {
-    display: flex;
-    height: 8px;
-    background: #1e293b;
-    overflow: hidden;
-}
-
-.boys-bar {
-    background: #259ad6;
-}
-
-.girls-bar {
-    background: #fdc134;
-}
-
-@media (min-width: 769px) {
-    .page > .panel:last-child {
-        overflow-y: auto;      
-    }
-}
-
-@media (min-width: 769px) {
-    .session-name {
-        font-size: clamp(10px, 1vw, 18px);
-        line-height: 1;
-        word-break: break-word;
-    }
-}
 </style>
 <div class="topbar">
     <div class="timer">
@@ -1003,6 +963,7 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 <div class="page">
 
     {#if !isMobile || activeTab === 'posts'}
+    <!-- POSTS -->
     <div class="posts panel">
 
         <div class="logs-header">
@@ -1013,228 +974,245 @@ $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
         </div>
 
         {#each posts as post}
-    <div class="post-card">
-        <div class="post-user">
-            {post.user}
-            <div style="font-size:10px; color:#64748b;">
-                {new Date(post.created_at).toLocaleString()}
+        <div class="post-card">
+            <div class="post-user">
+                {post.user}
+                <div style="font-size:10px; color:#64748b;">
+                    {new Date(post.created_at).toLocaleString()}
+                </div>
+            </div>
+
+            {#if post.media && post.media.length > 0}
+            <div 
+                class="carousel"
+                on:touchstart={handlePostTouchStart}
+                on:touchend={(e) => handlePostTouchEnd(e, post)}
+            >
+
+                {#if post.media[(postIndexes[post.id] || 0)].match(/\.(mp4|webm|ogg)$/)}
+                    <video 
+                        class="carousel-img"
+                        src={post.media[(postIndexes[post.id] || 0)]}
+                        autoplay
+                        muted
+                        loop
+                        playsinline
+                        on:click={() => openViewer(post, postIndexes[post.id] || 0)}
+                    />
+                {:else}
+                    <img 
+                        class="carousel-img"
+                        src={post.media[(postIndexes[post.id] || 0)]}
+                        on:click={() => openViewer(post, postIndexes[post.id] || 0)}
+                    />
+                {/if}
+
+                {#if post.media.length > 1}
+                    <button class="nav left" on:click={() => prevPostMedia(post.id, post.media.length)}>‹</button>
+                    <button class="nav right" on:click={() => nextPostMedia(post.id, post.media.length)}>›</button>
+                {/if}
+
+                {#if post.media.length > 1}
+                <div class="dots">
+                    {#each post.media.slice(0,5) as _, i}
+                        <span class="dot {i === (postIndexes[post.id] || 0) ? 'active' : ''}"></span>
+                    {/each}
+                </div>
+                {/if}
+
+            </div>
+            {/if}
+
+            <div class="post-actions">
+                <span on:click={() => likePost(post)}>❤️ {post.likes}</span>
+            </div>
+
+            <div class="post-caption">
+                <strong>{post.user}</strong> {post.caption}
             </div>
         </div>
-
-{#if post.media && post.media.length > 0}
-
-<div 
-    class="carousel"
-    on:touchstart={handlePostTouchStart}
-    on:touchend={(e) => handlePostTouchEnd(e, post)}
->
-
-    {#if post.media[(postIndexes[post.id] || 0)].match(/\.(mp4|webm|ogg)$/)}
-        <video 
-    class="carousel-img"
-    src={post.media[(postIndexes[post.id] || 0)]}
-    autoplay
-    muted
-    loop
-    playsinline
-    on:click={() => openViewer(post, postIndexes[post.id] || 0)}
-/>
-    {:else}
-        <img 
-            class="carousel-img"
-            src={post.media[(postIndexes[post.id] || 0)]}
-            on:click={() => openViewer(post, postIndexes[post.id] || 0)}
-        />
-    {/if}
-
-    {#if post.media.length > 1}
-        <button class="nav left" on:click={() => prevPostMedia(post.id, post.media.length)}>‹</button>
-        <button class="nav right" on:click={() => nextPostMedia(post.id, post.media.length)}>›</button>
-    {/if}
-
-    {#if post.media.length > 1}
-<div class="dots">
-    {#each post.media.slice(0,5) as _, i}
-        <span class="dot {i === (postIndexes[post.id] || 0) ? 'active' : ''}"></span>
-    {/each}
-</div>
-{/if}
-
-</div>
-
-{/if}
-
-        <div class="post-actions">
-            <span on:click={() => likePost(post)}>❤️ {post.likes}</span>
-        </div>
-
-        <div class="post-caption">
-            <strong>{post.user}</strong> {post.caption}
-        </div>
-    </div>
-{/each}
+        {/each}
 
     </div>
     {/if}
+
 
     {#if !isMobile || activeTab === 'live'}
-    <div class="right">
 
-        <div class="top-row">
+    <!-- SCHEDULE -->
+    <div class="panel schedule-panel">
+        <div class="panel-title">FULL SCHEDULE</div>
 
-            <div class="panel">
-                <div class="panel-title">FULL SCHEDULE</div>
-                <div class="schedule">
+        <div class="schedule">
+            {#each Object.entries(
+                scheduleData.reduce((acc, s) => {
+                    if (!acc[s.day]) acc[s.day] = [];
+                    acc[s.day].push(s);
+                    return acc;
+                }, {})
+            ) as [day, sessions]}
 
-                    {#each Object.entries(
-                        scheduleData.reduce((acc, s) => {
-                            if (!acc[s.day]) acc[s.day] = [];
-                            acc[s.day].push(s);
-                            return acc;
-                        }, {})
-                    ) as [day, sessions]}
+                <div style="margin-bottom:10px;">
+                    <div style="color:#259ad6; font-weight:bold;">DAY {day}</div>
 
-                        <div style="margin-bottom:10px;">
-                            <div style="color:#259ad6; font-weight:bold;">DAY {day}</div>
-
-                            {#each sessions as item}
-                                <div class="schedule-item {item.status}">
-                                    <span class="status-icon">
-                                        {#if item.status === 'done'} ✔ {/if}
-                                        {#if item.status === 'ongoing'} ● {/if}
-                                        {#if item.status === 'cancelled'} ✖ {/if}
-                                    </span>
-                                    {item.time} — {item.name}
-                                </div>
-                            {/each}
+                    {#each sessions as item}
+                        <div class="schedule-item {item.status}">
+                            <span class="status-icon">
+                                {#if item.status === 'done'} ✔ {/if}
+                                {#if item.status === 'ongoing'} ● {/if}
+                                {#if item.status === 'cancelled'} ✖ {/if}
+                            </span>
+                            {item.time} — {item.name}
                         </div>
-
                     {/each}
-
-                </div>
-            </div>
-
-            <div class="current-two-panels">
-
-                <div class="panel">
-                    <div class="panel-title">CURRENT SESSION</div>
-
-                    {#if overrideSession}
-                        <div class="session-name">{overrideSession.session_name}</div>
-                    {:else if currentSession}
-                        <div class="session-name">{currentSession.session_name}</div>
-                        <div class="session-time">{currentSession.time}</div>
-                    {:else}
-                        <div class="session-name">No Active Session</div>
-                    {/if}
                 </div>
 
-                <div class="panel">
-                    <div class="panel-title">ALERTS</div>
+            {/each}
+        </div>
+    </div>
 
-                    {#if alerts.length > 0}
-                        <div class="alert-row">
-                            <span class="alert-icon">⚠</span>
-                            <div class="alert-text">
-                                {alerts[0].text}
-                            </div>
-                        </div>
-                    {/if}
-                </div>
+<div class="session-stack">
 
-            </div>
+    <div class="panel session-panel">
+        <div class="panel-title">CURRENT SESSION</div>
 
-            <div class="panel">
-                <div class="panel-title">CREW</div>
-
-                <div 
-    class="media-content"
-    on:touchstart={handleCrewTouchStart}
-    on:touchend={handleCrewTouchEnd}
->
-
-    {#if crewImages.length > 0}
-
-        {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
-            <video autoplay muted loop on:click={openCrewViewer}>
-                <source src={crewImages[crewIndex].image_url} />
-            </video>
+        {#if overrideSession}
+            <div class="session-name">{overrideSession.session_name}</div>
+        {:else if currentSession}
+            <div class="session-name">{currentSession.session_name}</div>
+            <div class="session-time">{currentSession.time}</div>
         {:else}
-            <img 
-                src={crewImages[crewIndex].image_url}
-                on:click={openCrewViewer}
-            />
+            <div class="session-name">No Active Session</div>
         {/if}
+    </div>
 
-        <div class="crew-controls">
-            <button on:click={prevCrew}>◀</button>
-            <button on:click={nextCrew}>▶</button>
-        </div>
+    <div class="panel alert-panel">
+        <div class="panel-title">ALERTS</div>
 
-       
-
-        {#if crewImages[crewIndex].caption}
-            <div style="text-align:center; margin-top:6px;">
-                {crewImages[crewIndex].caption}
+        {#if alerts.length > 0}
+            <div class="alert-row">
+                <span class="alert-icon">⚠</span>
+                <div class="alert-text">
+                    {alerts[0].text}
+                </div>
             </div>
         {/if}
-
-    {/if}
+    </div>
 
 </div>
-            </div>
 
-        </div>
 
-    </div>
+    <!-- STATS -->
+
+
     {/if}
-
 {#if !isMobile || activeTab === 'stats'}
-<div class="panel">
 
-    <div class="panel-title">MISSION STATS</div>
+    <div class="panel stats-panel">
+<div class="panel-title">LEADING CREWS</div>
 
-    Sessions Completed: {completed} / {total}
+        {#each teams as t}
+            <div class="leader">
+                <span>{t.team_name}</span>
+                <span>{t.points}</span>
+            </div>
+        {/each}
 
-    <div class="progress-bar">
-        <div class="progress-fill"
-             style="width:{total ? (completed/total)*100 : 0}%"></div>
+        
+        <br>
+        <div class="panel-title">MISSION STATS</div>
+
+        Sessions Completed: {completed} / {total}
+
+        <div class="progress-bar">
+            <div class="progress-fill"
+                style="width:{total ? (completed/total)*100 : 0}%"></div>
+        </div>
+<div style="margin-top:10px;">
+    Today: {todayCompleted} / {todayTotal}
+</div>
+
+<div class="progress-bar">
+    <div 
+        class="progress-fill"
+        style="width:{todayTotal ? (todayCompleted/todayTotal)*100 : 0}%">
+    </div>
+</div>
+        <div class="gender-stat">
+            <div class="gender-labels">
+    <div class="gender-col left">
+        <span class="label">Boys</span>
+        <span class="value">{boys}</span>
     </div>
 
-    <div class="gender-stat">
-
-        <div class="gender-labels">
-    <div>
-        <span class="boys">Boys</span><br>
-        {boys}
-    </div>
-
-    <div style="text-align:right;">
-        <span class="girls">Girls</span><br>
-        {girls}
+    <div class="gender-col right">
+        <span class="label">Girls</span>
+        <span class="value">{girls}</span>
     </div>
 </div>
 
-        <div class="gender-bar">
-            <div class="boys-bar" style="width:{boysPercent}%"></div>
-            <div class="girls-bar" style="width:{girlsPercent}%"></div>
+            <div class="gender-bar">
+                <div class="boys-bar" style="width:{boysPercent}%"></div>
+                <div class="girls-bar" style="width:{girlsPercent}%"></div>
+            </div>
         </div>
+
+
+        
 
     </div>
+{/if}
 
-    <br>
+    {#if !isMobile || activeTab === 'live'}
+    <!-- CREW -->
+    <div class="panel crew-panel">
 
-    <div class="panel-title">LEADING CREWS</div>
+        <div class="panel-title">CREW</div>
 
-    {#each teams as t}
-        <div class="leader">
-            <span>{t.team_name}</span>
-            <span>{t.points}</span>
-        </div>
+        <div 
+            class="media-content"
+            on:touchstart={handleCrewTouchStart}
+            on:touchend={handleCrewTouchEnd}
+        >
+
+            {#if crewImages.length > 0}
+
+                {#if crewImages[crewIndex].image_url.match(/\.(mp4|webm|ogg)$/)}
+                    <video autoplay muted loop on:click={openCrewViewer}>
+                        <source src={crewImages[crewIndex].image_url} />
+                    </video>
+                {:else}
+                    <img 
+                        src={crewImages[crewIndex].image_url}
+                        on:click={openCrewViewer}
+                    />
+                {/if}
+
+                {#if crewImages.length > 1}
+    <button class="nav left" on:click={prevCrew}>‹</button>
+    <button class="nav right" on:click={nextCrew}>›</button>
+{/if}
+
+{#if crewImages.length > 1}
+<div class="dots">
+    {#each crewImages as _, i}
+        <span class="dot {i === crewIndex ? 'active' : ''}"></span>
     {/each}
-
 </div>
 {/if}
+
+               {#if crewImages[crewIndex].caption}
+<div class="crew-caption">
+    {crewImages[crewIndex].caption}
+</div>
+{/if}
+
+            {/if}
+
+        </div>
+
+    </div>
+    {/if}
 
 </div>
 {#if selectedPost}
