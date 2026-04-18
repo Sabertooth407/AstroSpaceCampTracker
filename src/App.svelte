@@ -5,7 +5,7 @@
   import Lander from './pages/Lander.svelte';
   import Portal from './pages/Portal.svelte';
   import Admin from './pages/Admin.svelte';
-  import Student from './pages/Student.svelte'; // 🔥 ADDED
+  import Student from './pages/Student.svelte'; 
 
   let page = 'loader';
 
@@ -16,7 +16,7 @@
   onMount(async () => {
     await new Promise((res) => setTimeout(res, 3000));
 
-    navigate('lander'); // ✅ public landing
+    navigate('lander'); 
   });
 </script>
 
@@ -58,7 +58,7 @@
   <Portal {navigate} />
 {:else if page === 'admin'}
   <Admin {navigate} />
-{:else if page === 'student'} <!-- 🔥 ADDED -->
+{:else if page === 'student'}
   <Student {navigate} />
 {:else}
   <Lander {navigate} />

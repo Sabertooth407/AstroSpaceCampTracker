@@ -269,6 +269,8 @@ $: boysPercent = totalPeople ? (boys / totalPeople) * 100 : 0;
 $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
 let todayCompleted = scheduleData.filter(s => s.day === currentDay && s.status === 'done').length;
 let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
+
+
 </script>
 
 
@@ -279,7 +281,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     font-family: 'Orbitron', sans-serif;
 }
 
-/* ================= TOPBAR ================= */
 
 .topbar {
     position: fixed;
@@ -330,7 +331,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     filter: drop-shadow(0 0 6px #259ad68e);
 }
 
-/* ================= MAIN GRID ================= */
 
 .page {
     position: fixed;
@@ -341,7 +341,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
     display: grid;
 
-    /* FIXED: wider posts */
     grid-template-columns: 2.4fr 1.2fr 1.2fr 1fr;
 
     grid-template-rows: auto 1fr;
@@ -353,7 +352,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     isolation: isolate;
 }
 
-/* ================= PANELS ================= */
 
 .panel {
     border: 2px solid #259ad6;
@@ -361,7 +359,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     padding: 9px;
     box-shadow: 0 0 10px #259ad644;
 
-    /* CRITICAL FIX */
     min-height: 0;
 }
 
@@ -373,8 +370,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     margin-bottom: 10px;
     font-family: GoodTimes, serif;
 }
-
-/* ================= GRID PLACEMENT ================= */
 
 .posts {
     overflow-y: auto;
@@ -392,7 +387,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     grid-column: 3 / 4;
     grid-row: 1 / 2;
 
-    /* FIXED: equal height with schedule */
     display: grid;
     grid-template-rows: 1fr 0.7fr;
     gap: 12px;
@@ -410,7 +404,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     grid-row: 2 / 3;
 }
 
-/* ================= POSTS ================= */
 
 .logs-header {
     display: flex;
@@ -456,7 +449,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     background: black;
 }
 
-/* ================= SCHEDULE ================= */
 
 .schedule {
     overflow-y: auto;
@@ -484,7 +476,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 .schedule-item.ongoing { color: #fdc134; }
 .schedule-item.cancelled { color: #ef4444; }
 
-/* ================= SESSION ================= */
 
 .session-name {
     font-size: 15px;
@@ -496,7 +487,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     color: #259ad6;
 }
 
-/* ================= ALERT ================= */
 
 .alert-row {
     display: flex;
@@ -517,7 +507,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     color: #fdc134;
 }
 
-/* ================= MEDIA ================= */
 
 .carousel {
     position: relative;
@@ -553,24 +542,22 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     transition: all 0.25s ease;
 }
 
-/* LEFT */
 .nav.left {
     left: 10px;
 }
 
-/* RIGHT */
+
 .nav.right {
     right: 10px;
 }
 
-/* HOVER EFFECT */
 .nav:hover {
     background: rgba(37,154,214,0.9);
     transform: translateY(-50%) scale(1.15);
     box-shadow: 0 0 12px #259ad6;
 }
 
-/* CLICK FEEDBACK */
+
 .nav:active {
     transform: translateY(-50%) scale(0.95);
 }
@@ -606,7 +593,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     height: 100%;
     object-fit: contain;
 
-    display: block; /* removes inline spacing issues */
+    display: block;
 }
 .carousel img,
 .carousel video {
@@ -632,7 +619,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
     z-index: 6;
 }
-/* ================= STATS ================= */
 
 .progress-bar {
     height: 10px;
@@ -686,7 +672,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 .gender-labels {
     display: flex;
     justify-content: space-between;
-    align-items: flex-end; /* 🔥 KEY FIX */
+    align-items: flex-end; 
     margin-bottom: 6px;
     margin-top: 10px;
 }
@@ -705,7 +691,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     font-weight: bold;
     color: white;
 }
-/* ================= VIEWER ================= */
 
 .viewer {
     position: fixed;
@@ -760,7 +745,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
 .crew-caption {
     position: absolute;
-    bottom: 32px; /* sits above dots */
+    bottom: 32px; 
 
     left: 50%;
     transform: translateX(-50%);
@@ -773,7 +758,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
     z-index: 20;
 
-    /* readability */
     background: rgba(0,0,0,0.4);
     padding: 4px 8px;
     border-radius: 6px;
@@ -796,13 +780,12 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
     object-fit: contain;
 }
 
-/* ================= MOBILE ================= */
 
 
 @media (max-width: 768px) {
 
     .schedule-panel {
-        height: 250px;   /* 👈 fixed height box */
+        height: 250px;  
         display: flex;
         flex-direction: column;
     }
@@ -963,7 +946,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 <div class="page">
 
     {#if !isMobile || activeTab === 'posts'}
-    <!-- POSTS -->
+
     <div class="posts panel">
 
         <div class="logs-header">
@@ -1039,7 +1022,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
     {#if !isMobile || activeTab === 'live'}
 
-    <!-- SCHEDULE -->
+
     <div class="panel schedule-panel">
         <div class="panel-title">FULL SCHEDULE</div>
 
@@ -1102,8 +1085,6 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 </div>
 
 
-    <!-- STATS -->
-
 
     {/if}
 {#if !isMobile || activeTab === 'stats'}
@@ -1164,7 +1145,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 {/if}
 
     {#if !isMobile || activeTab === 'live'}
-    <!-- CREW -->
+   
     <div class="panel crew-panel">
 
         <div class="panel-title">CREW</div>
