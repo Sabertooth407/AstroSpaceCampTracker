@@ -394,7 +394,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
     /* FIXED: equal height with schedule */
     display: grid;
-    grid-template-rows: 1fr 1fr;
+    grid-template-rows: 1fr 0.7fr;
     gap: 12px;
     height: 100%;
 }
@@ -460,7 +460,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 
 .schedule {
     overflow-y: auto;
-    max-height: 180px;
+    max-height: 155px;
 }
 
 .schedule-item {
@@ -487,7 +487,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 /* ================= SESSION ================= */
 
 .session-name {
-    font-size: 18px;
+    font-size: 15px;
     color: #fdc134;
 }
 
@@ -513,7 +513,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 .alert-text {
     height: 60px;
     overflow-y: auto;
-    font-size: 22px;
+    font-size: 16px;
     color: #fdc134;
 }
 
@@ -802,7 +802,7 @@ let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
 @media (max-width: 768px) {
 
     .schedule-panel {
-        height: 250px !important;   /* 👈 fixed height box */
+        height: 250px;   /* 👈 fixed height box */
         display: flex;
         flex-direction: column;
     }
