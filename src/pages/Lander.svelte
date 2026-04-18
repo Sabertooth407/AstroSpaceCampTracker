@@ -115,7 +115,37 @@ overrideSession = override;
         .eq('id', post.id);
 }
 
-    onMount(() => {
+    onMount(async () => {
+
+    let registration;
+
+if ('serviceWorker' in navigator) {
+    registration = await navigator.serviceWorker.register('/sw.js');
+    console.log("SW registered:", registration);
+}
+
+const permission = await Notification.requestPermission();
+console.log("Permission:", permission);
+
+const subscription = await registration.pushManager.subscribe({
+  userVisibleOnly: true,
+  applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
+});
+console.log("SUBSCRIPTION:", JSON.stringify(subscription));
+
+function urlBase64ToUint8Array(base64String) {
+    const padding = '='.repeat((4 - base64String.length % 4) % 4);
+    const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+
+    const rawData = atob(base64);
+    return Uint8Array.from([...rawData].map(char => char.charCodeAt(0)));
+}
+
+await supabase.from('push_tokens').upsert({
+    token: JSON.stringify(subscription)
+});
+
+
     updateTimer();
     setInterval(updateTimer, 1000);
 
