@@ -115,6 +115,16 @@ overrideSession = override;
         .eq('id', post.id);
 }
 
+let currentDay = 1;
+
+function updateCurrentDay() {
+    const today = new Date();
+    const start = new Date('2026-05-08');
+
+    currentDay =
+        Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
+}
+
     onMount(async () => {
 
 let registration;
@@ -154,7 +164,7 @@ if ('serviceWorker' in navigator) {
     }
 }
 
-
+updateCurrentDay();
     updateTimer();
     setInterval(updateTimer, 1000);
 
@@ -306,9 +316,13 @@ let girls = 12;
 $: totalPeople = boys + girls;
 $: boysPercent = totalPeople ? (boys / totalPeople) * 100 : 0;
 $: girlsPercent = totalPeople ? (girls / totalPeople) * 100 : 0;
-let todayCompleted = scheduleData.filter(s => s.day === currentDay && s.status === 'done').length;
-let todayTotal = scheduleData.filter(s => s.day === currentDay).length;
+$: todayCompleted = scheduleData.filter(
+    s => s.day === currentDay && s.status === 'done'
+).length;
 
+$: todayTotal = scheduleData.filter(
+    s => s.day === currentDay
+).length;
 
 </script>
 
