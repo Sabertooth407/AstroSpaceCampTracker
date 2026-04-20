@@ -69,7 +69,7 @@
 </style>
 
 <div class="screen">
-  <img src="/rocket.png" class="logo" alt="logo" />
+  <img src="/asc-logo-color.svg" class="logo" alt="logo" />
 
   <h1>Astro Camp</h1>
 
