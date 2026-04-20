@@ -88,7 +88,6 @@
     await supabase.from('current_override').delete().eq('id', 1);
     if (status === 'ongoing') {
 
-        // 1. Get current ongoing session
         const { data: current } = await supabase
             .from('schedule')
             .select('*')
@@ -97,7 +96,6 @@
 
         if (current && current.id !== id) {
 
-            // 2. Mark previous as DONE (only if not cancelled)
             if (current.status !== 'cancelled') {
                 await supabase
                     .from('schedule')
@@ -107,7 +105,6 @@
         }
     }
 
-    // 3. Set new status
     await supabase
         .from('schedule')
         .update({ status })
@@ -196,7 +193,6 @@ h3 {
 
     <h2>ADMIN PANEL</h2>
 
-    <!-- PENDING -->
     <div class="section">
     <h3 on:click={() => showPending = !showPending}>
     Pending Posts {showPending ? '▲' : '▼'}
@@ -261,13 +257,11 @@ h3 {
 {/if}
 </div>
 <div class="section">
-    <!-- ALERT -->
     <h3>Send Alert</h3>
     <textarea bind:value={alertText}></textarea>
     <button on:click={sendAlert}>Send</button>
 </div>
 <div class="section">
-    <!-- CREW -->
     <h3>Upload Crew Media</h3>
     <input type="file" accept="image/*,video/*"
         on:change={(e) => crewFile = e.target.files[0]} />
@@ -283,7 +277,6 @@ h3 {
 <button on:click={() => forceSession('Sleep')}>Sleep</button>
 </div>  
 <div class="section">
-    <!-- SCHEDULE CONTROL -->
     <h3>Schedule Control</h3>
     {#each Object.entries(
     schedule.reduce((acc, s) => {

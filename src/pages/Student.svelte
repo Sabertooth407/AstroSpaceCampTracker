@@ -222,7 +222,6 @@ button:disabled {
                 <img src={URL.createObjectURL(f)} />
             {/if}
 
-            <!-- ❌ REMOVE BUTTON -->
             <button class="remove-btn" on:click={() => removeFile(i)}>✕</button>
 
         </div>

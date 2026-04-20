@@ -125,11 +125,9 @@ if ('serviceWorker' in navigator) {
     console.log("SW registered:", registration);
 }
 
-// Ask permission
 const permission = await Notification.requestPermission();
 console.log("Permission:", permission);
 
-// ❗ ONLY continue if allowed
 if (permission === 'granted') {
 
     const subscription = await registration.pushManager.subscribe({
