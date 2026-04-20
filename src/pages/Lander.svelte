@@ -1008,6 +1008,12 @@ async function downloadImage(url, name = 'download') {
     color: black;
     box-shadow: 0 0 10px #259ad6;
 }
+
+@media (max-width: 768px) {
+    .crew-btn {
+        display: none;
+    }
+}
 </style>
 <div class="topbar">
     <div class="timer">
