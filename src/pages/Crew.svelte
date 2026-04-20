@@ -71,7 +71,7 @@ function handleCrewViewerTouchStart(e) {
 function handleCrewViewerTouchEnd(e) {
     crewViewerEndX = e.changedTouches[0].screenX;
 
-    if (!crewImages.length) return;
+    if (!selectedCrew || selectedCrew.length === 0) return;
 
     // swipe left → next
     if (crewViewerStartX - crewViewerEndX > 50) {
@@ -324,13 +324,14 @@ function handleCrewViewerTouchEnd(e) {
 </div>
 
 {#if selectedCrew}
-<div 
-    class="viewer"
-    on:click={closeCrewViewer}
-    on:touchstart={handleCrewViewerTouchStart}
-    on:touchend={handleCrewViewerTouchEnd}
->
-    <div class="viewer-content" on:click|stopPropagation>
+<div class="viewer" on:click={closeCrewViewer}>
+    
+    <div 
+        class="viewer-content"
+        on:click|stopPropagation
+        on:touchstart={handleCrewViewerTouchStart}
+        on:touchend={handleCrewViewerTouchEnd}
+    >
 
         <img src={selectedCrew[crewViewerIndex].image_url} />
 
