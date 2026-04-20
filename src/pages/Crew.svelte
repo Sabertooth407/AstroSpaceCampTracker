@@ -15,6 +15,31 @@
     }
 
     onMount(fetchCrew);
+
+    let selectedCrew = null;
+let crewViewerIndex = 0;
+
+let allCrew = [];
+
+$: allCrew = [...students, ...organisers];
+
+function openCrewViewer(index) {
+    crewViewerIndex = index;
+    selectedCrew = allCrew;
+}
+
+function closeCrewViewer() {
+    selectedCrew = null;
+}
+
+function nextCrew() {
+    crewViewerIndex = (crewViewerIndex + 1) % selectedCrew.length;
+}
+
+function prevCrew() {
+    crewViewerIndex =
+        (crewViewerIndex - 1 + selectedCrew.length) % selectedCrew.length;
+}
 </script>
 
 <style>
@@ -114,6 +139,71 @@
     color: #64748b;
 }
 
+.viewer {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.95);
+
+    display: flex;
+    justify-content: center;
+    align-items: center;
+
+    z-index: 9999;
+}
+
+.viewer-content {
+    position: relative;
+    max-width: 90%;
+    max-height: 90%;
+}
+
+.viewer img {
+    max-width: 100%;
+    max-height: 75vh;
+    object-fit: contain;
+}
+
+.viewer-name {
+    text-align: center;
+    margin-top: 10px;
+    color: #fdc134;
+}
+
+/* NAV BUTTONS (reuse style vibe) */
+.nav {
+    position: absolute;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 40px;
+    height: 40px;
+
+    background: rgba(0,0,0,0.5);
+    color: white;
+    border: none;
+    border-radius: 50%;
+
+    font-size: 22px;
+    cursor: pointer;
+}
+
+.nav.left { left: -50px; }
+.nav.right { right: -50px; }
+
+/* DOWNLOAD */
+.download-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+
+    background: white;
+    color: black;
+
+    padding: 6px 10px;
+    border-radius: 6px;
+    text-decoration: none;
+    font-size: 12px;
+}
+
 /* RESPONSIVE */
 
 /* Tablet */
@@ -139,6 +229,11 @@
         height: 80px;
     }
 }
+
+@media (max-width: 768px) {
+    .nav.left { left: 5px; }
+    .nav.right { right: 5px; }
+}
 </style>
 
 <!-- HEADER -->
@@ -155,12 +250,12 @@
     <div class="section">
         <div class="section-title">CREW MEMBERS</div>
         <div class="grid students-grid">
-            {#each students as p}
-                <div class="card">
-                    <img src={p.image_url} />
-                    <div class="name">{p.name}</div>
-                    <div class="role">{p.team}</div>
-                </div>
+            {#each students as p, i}
+                <div class="card" on:click={() => openCrewViewer(i)}>
+        <img src={p.image_url} />
+        <div class="name">{p.name}</div>
+        <div class="role">{p.team}</div>
+    </div>
             {/each}
         </div>
     </div>
@@ -169,14 +264,42 @@
     <div class="section">
         <div class="section-title">MISSION CONTROL</div>
         <div class="grid org-grid">
-            {#each organisers as p}
-                <div class="card">
-                    <img src={p.image_url} />
-                    <div class="name">{p.name}</div>
-                    <div class="role">{p.role}</div>
-                </div>
+            {#each organisers as p, i}
+                <div class="card" on:click={() => openCrewViewer(i + students.length)}>
+        <img src={p.image_url} />
+        <div class="name">{p.name}</div>
+        <div class="role">{p.role}</div>
+    </div>
             {/each}
         </div>
     </div>
 
 </div>
+
+{#if selectedCrew}
+<div class="viewer" on:click={closeCrewViewer}>
+    <div class="viewer-content" on:click|stopPropagation>
+
+        <img src={selectedCrew[crewViewerIndex].image_url} />
+
+        <div class="viewer-name">
+            {selectedCrew[crewViewerIndex].name}
+        </div>
+
+        {#if selectedCrew.length > 1}
+            <button class="nav left" on:click={prevCrew}>‹</button>
+            <button class="nav right" on:click={nextCrew}>›</button>
+        {/if}
+
+        <a 
+            href={selectedCrew[crewViewerIndex].image_url}
+            download
+            target="_blank"
+            class="download-btn"
+        >
+            ⬇ DOWNLOAD
+        </a>
+
+    </div>
+</div>
+{/if}
