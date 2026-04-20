@@ -18,8 +18,6 @@ let isMobile = false;
     let total = 0;
 
     let crewIndex = 0;
-    let crewViewerStartX = 0;
-let crewViewerEndX = 0;
 
     const targetDate = new Date('2026-05-08T11:00:00');
 
@@ -345,26 +343,6 @@ async function downloadImage(url, name = 'download') {
         window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
         console.error('Download failed:', err);
-    }
-}
-
-function handleCrewViewerTouchStart(e) {
-    crewViewerStartX = e.changedTouches[0].screenX;
-}
-
-function handleCrewViewerTouchEnd(e) {
-    crewViewerEndX = e.changedTouches[0].screenX;
-
-    if (!crewImages.length) return;
-
-    // swipe left → next
-    if (crewViewerStartX - crewViewerEndX > 50) {
-        nextCrew();
-    }
-
-    // swipe right → prev
-    if (crewViewerEndX - crewViewerStartX > 50) {
-        prevCrew();
     }
 }
 </script>

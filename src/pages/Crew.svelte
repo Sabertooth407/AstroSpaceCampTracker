@@ -6,7 +6,8 @@
 
     let students = [];
     let organisers = [];
-
+let crewViewerStartX = 0;
+let crewViewerEndX = 0;
     async function fetchCrew() {
         const { data } = await supabase.from('crew_profiles').select('*');
 
@@ -61,6 +62,25 @@ a.download = `${name}.${extension}`;
         window.URL.revokeObjectURL(blobUrl);
     } catch (err) {
         console.error('Download failed:', err);
+    }
+}
+function handleCrewViewerTouchStart(e) {
+    crewViewerStartX = e.changedTouches[0].screenX;
+}
+
+function handleCrewViewerTouchEnd(e) {
+    crewViewerEndX = e.changedTouches[0].screenX;
+
+    if (!crewImages.length) return;
+
+    // swipe left → next
+    if (crewViewerStartX - crewViewerEndX > 50) {
+        nextCrew();
+    }
+
+    // swipe right → prev
+    if (crewViewerEndX - crewViewerStartX > 50) {
+        prevCrew();
     }
 }
 </script>
@@ -304,7 +324,12 @@ a.download = `${name}.${extension}`;
 </div>
 
 {#if selectedCrew}
-<div class="viewer" on:click={closeCrewViewer}>
+<div 
+    class="viewer"
+    on:click={closeCrewViewer}
+    on:touchstart={handleCrewViewerTouchStart}
+    on:touchend={handleCrewViewerTouchEnd}
+>
     <div class="viewer-content" on:click|stopPropagation>
 
         <img src={selectedCrew[crewViewerIndex].image_url} />
