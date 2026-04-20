@@ -1,6 +1,7 @@
 const webpush = require('web-push');
 const { createClient } = require('@supabase/supabase-js');
-
+const express = require('express');
+const app = express();
 // 🔐 Supabase
 const supabase = createClient(
   'https://oclwbllfeslheerxhzbv.supabase.co',
@@ -130,3 +131,21 @@ setInterval(() => {
 }, 5000);
 
 console.log("🚀 Push server running...");
+
+// 👇 keep your existing loop
+setInterval(() => {
+  checkAndSend().catch(err => {
+    console.error("Loop error:", err);
+  });
+}, 10000);
+
+// 👇 ADD THIS SERVER PART
+const PORT = process.env.PORT || 3000;
+
+app.get('/', (req, res) => {
+  res.send("🚀 Push server running");
+});
+
+app.listen(PORT, () => {
+  console.log("Server running on port", PORT);
+});
