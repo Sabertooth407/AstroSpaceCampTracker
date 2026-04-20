@@ -967,6 +967,27 @@ $: todayTotal = scheduleData.filter(
 .stats-panel { order: 5 !important; }
 }
 
+
+.crew-btn {
+    margin-top: 14px;
+    width: 100%;
+    padding: 8px;
+
+    background: transparent;
+    border: 1px solid #259ad6;
+    color: #259ad6;
+
+    font-family: inherit;
+    cursor: pointer;
+
+    transition: all 0.25s ease;
+}
+
+.crew-btn:hover {
+    background: #259ad6;
+    color: black;
+    box-shadow: 0 0 10px #259ad6;
+}
 </style>
 <div class="topbar">
     <div class="timer">
@@ -988,6 +1009,7 @@ $: todayTotal = scheduleData.filter(
     <button class:active={activeTab === 'posts'} on:click={() => activeTab = 'posts'}>Logs</button>
     <button class:active={activeTab === 'live'} on:click={() => activeTab = 'live'}>Live</button>
     <button class:active={activeTab === 'stats'} on:click={() => activeTab = 'stats'}>Stats</button>
+    <button class:active={activeTab === 'crew'} on:click={() => navigate('crew')}>Crew</button>
 </div>
 
 <div class="page">
@@ -1187,15 +1209,18 @@ $: todayTotal = scheduleData.filter(
 
 
         
-
+<button class="crew-btn" on:click={() => navigate('crew')}>
+    MEET THE CREW →
+</button>
     </div>
+    
 {/if}
 
     {#if !isMobile || activeTab === 'live'}
    
     <div class="panel crew-panel">
 
-        <div class="panel-title">CREW</div>
+        <div class="panel-title">MISSION FEED</div>
 
         <div 
             class="media-content"
