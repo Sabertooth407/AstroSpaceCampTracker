@@ -826,12 +826,6 @@ $: todayTotal = scheduleData.filter(
     touch-action: none;
 }
 
-.media-content img,
-.media-content video {
-    max-width: 100%;
-    max-height: 100%;
-    object-fit: contain;
-}
 
 
 
