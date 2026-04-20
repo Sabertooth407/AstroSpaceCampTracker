@@ -73,13 +73,21 @@ async function protectAdmin() {
     }
 
     async function sendAlert() {
-        await supabase.from('alerts').delete().neq('id', 0);
-        await supabase.from('alerts').insert([{ text: alertText }]);
+    const del = await supabase.from('alerts').delete().neq('id', 0);
+    console.log("DELETE:", del);
 
-        alertText = '';
-        alert("Alert sent");
-        fetchAll();
+    const ins = await supabase.from('alerts').insert([{ text: alertText }]);
+    console.log("INSERT:", ins);
+
+    if (ins.error) {
+        alert("Failed: " + ins.error.message);
+        return;
     }
+
+    alertText = '';
+    alert("Alert sent");
+    fetchAll();
+}
 
     async function uploadCrew() {
         if (!crewFile) return;
