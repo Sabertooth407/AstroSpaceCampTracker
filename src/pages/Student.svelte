@@ -2,12 +2,45 @@
     import { supabase } from '../lib/supabase';
     export let navigate;
 
+    let isAuthorized = false;
+let loadingPage = true;
+
     let name = '';
     let activity = '';
     let content = '';
     let files = [];
     let loading = false; 
 
+    async function protectStudent() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    // Not logged in
+    if (!user) {
+        navigate('portal');
+        return;
+    }
+
+    // Get role
+    const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    // Not student
+    if (error || !data || data.role !== 'Student') {
+        navigate('portal');
+        return;
+    }
+
+    // ✅ Authorized
+    isAuthorized = true;
+
+    // Fetch only after auth
+    await fetchMyPosts();
+
+    loadingPage = false;
+}
     async function submitPost() {
         if (loading) return;
         loading = true;
@@ -42,16 +75,19 @@
             mediaUrls.push(data.publicUrl);
         }
 
-        await supabase.from('posts').insert([
-            {
-                user_name: finalName,
-                activity_name: finalActivity,
-                content: finalContent,
-                media_urls: mediaUrls,
-                likes: 0,
-                status: "pending"
-            }
-        ]);
+        const { data: { user } } = await supabase.auth.getUser();
+
+await supabase.from('posts').insert([
+    {
+        user_id: user.id,   // 🔒 REQUIRED
+        user_name: finalName,
+        activity_name: finalActivity,
+        content: finalContent,
+        media_urls: mediaUrls,
+        likes: 0,
+        status: "pending"
+    }
+]);
 
         alert("Post sent");
 
@@ -65,9 +101,12 @@
     let myPosts = [];
 
 async function fetchMyPosts() {
+    const { data: { user } } = await supabase.auth.getUser();
+
     const { data } = await supabase
         .from('posts')
         .select('*')
+        .eq('user_id', user.id)   // 🔒 IMPORTANT
         .order('created_at', { ascending: false });
 
     myPosts = data || [];
@@ -76,7 +115,7 @@ async function fetchMyPosts() {
 import { onMount } from 'svelte';
 
 onMount(() => {
-    fetchMyPosts();
+    protectStudent();
 });
 function removeFile(index) {
     files = files.filter((_, i) => i !== index);
@@ -195,7 +234,10 @@ button:disabled {
     cursor: pointer;
 }
 </style>
+{#if loadingPage}
+    <div style="color:white; padding:20px;">Checking access...</div>
 
+{:else if isAuthorized}
 <div class="container">
     <h2>CREATE POST</h2>
 
@@ -262,3 +304,7 @@ button:disabled {
         </div>
     {/each}
 </div>
+
+{:else}
+    <!-- nothing (redirect already happened) -->
+{/if}
