@@ -40,6 +40,29 @@ function prevCrew() {
     crewViewerIndex =
         (crewViewerIndex - 1 + selectedCrew.length) % selectedCrew.length;
 }
+
+
+async function downloadImage(url, name = 'crew-image') {
+    try {
+        const res = await fetch(url);
+        const blob = await res.blob();
+
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+        const extension = url.split('.').pop().split('?')[0];
+a.download = `${name}.${extension}`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+        console.error('Download failed:', err);
+    }
+}
 </script>
 
 <style>
@@ -200,8 +223,12 @@ function prevCrew() {
 
     padding: 6px 10px;
     border-radius: 6px;
-    text-decoration: none;
+
     font-size: 12px;
+    font-weight: bold;
+
+    cursor: pointer;
+    border: none;
 }
 
 /* RESPONSIVE */
@@ -291,14 +318,12 @@ function prevCrew() {
             <button class="nav right" on:click={nextCrew}>›</button>
         {/if}
 
-        <a 
-            href={selectedCrew[crewViewerIndex].image_url}
-            download
-            target="_blank"
-            class="download-btn"
-        >
-            ⬇ DOWNLOAD
-        </a>
+        <button
+    class="download-btn"
+    on:click={() => downloadImage(selectedCrew[crewViewerIndex].image_url, selectedCrew[crewViewerIndex].name)}
+>
+    ⬇ DOWNLOAD
+</button>
 
     </div>
 </div>

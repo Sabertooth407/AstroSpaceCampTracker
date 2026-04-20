@@ -323,7 +323,28 @@ $: todayCompleted = scheduleData.filter(
 $: todayTotal = scheduleData.filter(
     s => s.day === currentDay
 ).length;
+async function downloadImage(url, name = 'download') {
+    try {
+        const res = await fetch(url);
+        const blob = await res.blob();
 
+        const blobUrl = window.URL.createObjectURL(blob);
+
+        const a = document.createElement('a');
+        a.href = blobUrl;
+
+        const extension = url.split('.').pop().split('?')[0];
+        a.download = `${name}.${extension}`;
+
+        document.body.appendChild(a);
+        a.click();
+
+        a.remove();
+        window.URL.revokeObjectURL(blobUrl);
+    } catch (err) {
+        console.error('Download failed:', err);
+    }
+}
 </script>
 
 
@@ -668,9 +689,8 @@ $: todayTotal = scheduleData.filter(
     font-size: 12px;
     font-weight: bold;
 
-    text-decoration: none;
-
-    z-index: 6;
+    cursor: pointer;
+    border: none;
 }
 
 .progress-bar {
@@ -1296,9 +1316,17 @@ $: todayTotal = scheduleData.filter(
             {/each}
         </div>
 
-        <a href={selectedPost.media[viewerIndex]} download target="_blank" class="download-btn">
-            ⬇ DOWNLOAD
-        </a>
+        <button
+    class="download-btn"
+    on:click={() =>
+        downloadImage(
+            selectedPost.media[viewerIndex],
+            selectedPost.user
+        )
+    }
+>
+    ⬇ DOWNLOAD
+</button>
 
     </div>
 </div>
@@ -1326,14 +1354,17 @@ $: todayTotal = scheduleData.filter(
             <button class="nav right" on:click={nextCrew}>›</button>
         {/if}
 
-        <a 
-            href={crewImages[crewIndex].image_url} 
-            download 
-            target="_blank"
-            class="download-btn"
-        >
-            Download
-        </a>
+        <button
+    class="download-btn"
+    on:click={() =>
+        downloadImage(
+            crewImages[crewIndex].image_url,
+            'mission-feed'
+        )
+    }
+>
+    ⬇ DOWNLOAD
+</button>
 
     </div>
 </div>
