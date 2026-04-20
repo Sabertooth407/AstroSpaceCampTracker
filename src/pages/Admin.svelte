@@ -9,6 +9,32 @@
     let crewFile;
     let crewCaption = '';
     let schedule = [];
+    let isAuthorized = false;
+
+    if (data.role === 'Admin') {
+    isAuthorized = true;
+} else {
+    navigate('portal');
+}
+
+    async function protectAdmin() {
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user) {
+        navigate('portal');
+        return;
+    }
+
+    const { data, error } = await supabase
+        .from('users')
+        .select('role')
+        .eq('id', user.id)
+        .single();
+
+    if (error || !data || data.role !== 'Admin') {
+        navigate('portal');
+    }
+}
 
     async function fetchAll() {
         const { data: pending } = await supabase.from('posts').select('*').eq('status', 'pending');
@@ -112,8 +138,12 @@
 
     fetchAll();
 }
-
+onMount(async () => {
+    await protectAdmin();   // 🔒 MUST RUN FIRST
+    await fetchAll();
+});
     onMount(fetchAll);
+    
 
 async function forceSession(name) {
     await supabase.from('current_override').upsert([
@@ -188,7 +218,7 @@ h3 {
     color: #259ad6;
 }
 </style>
-
+{#if isAuthorized}
 <div class="container">
 
     <h2>ADMIN PANEL</h2>
@@ -306,3 +336,6 @@ h3 {
     <button on:click={() => navigate('lander')}>← Back</button>
 
 </div>
+{:else}
+    <div>Checking access...</div>
+{/if}
