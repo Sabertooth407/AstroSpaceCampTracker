@@ -5,18 +5,43 @@
   import Lander from './pages/Lander.svelte';
   import Portal from './pages/Portal.svelte';
   import Admin from './pages/Admin.svelte';
-  import Student from './pages/Student.svelte'; 
+  import Student from './pages/Student.svelte';
+  import Install from './pages/Install.svelte'; // 👈 ADD THIS
 
   let page = 'loader';
 
   function navigate(to) {
     page = to;
+    window.history.pushState({}, '', '/' + to);
   }
 
   onMount(async () => {
-    await new Promise((res) => setTimeout(res, 3000));
+    const path = window.location.pathname.replace('/', '');
 
-    navigate('lander'); 
+    // 👇 check URL FIRST
+    if (path === 'install') {
+      page = 'install';
+      return;
+    }
+
+    if (path === 'admin') {
+      page = 'admin';
+      return;
+    }
+
+    if (path === 'student') {
+      page = 'student';
+      return;
+    }
+
+    if (path === 'portal') {
+      page = 'portal';
+      return;
+    }
+
+    // default flow
+    await new Promise((res) => setTimeout(res, 3000));
+    page = 'lander';
   });
 </script>
 
@@ -54,6 +79,8 @@
 
 {#if page === 'loader'}
   <Loader />
+{:else if page === 'install'}
+  <Install />
 {:else if page === 'portal'}
   <Portal {navigate} />
 {:else if page === 'admin'}
