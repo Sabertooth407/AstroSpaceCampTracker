@@ -78,7 +78,6 @@
       <button on:click={installApp}>
         Install App
       </button>
-      <div class="hint">Quick install ⚡</div>
 
     {:else if isIOS}
       <div class="hint">
