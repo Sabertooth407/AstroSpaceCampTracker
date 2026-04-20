@@ -4,7 +4,7 @@
   let deferredPrompt = null;
   let isAndroid = false;
   let isIOS = false;
-  let showButton = false;
+  let ready = false;
 
   onMount(() => {
     const ua = navigator.userAgent;
@@ -15,64 +15,83 @@
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
-      showButton = true;
+      ready = true;
     });
+
+    // fallback: show something after 2 sec anyway
+    setTimeout(() => {
+      ready = true;
+    }, 2000);
   });
 
   async function installApp() {
     if (deferredPrompt) {
       deferredPrompt.prompt();
-      const choice = await deferredPrompt.userChoice;
-      deferredPrompt = null;
+    } else {
+      alert("Tap menu (⋮) → Add to Home Screen");
     }
   }
 </script>
 
 <style>
-  .container {
+  .screen {
     height: 100vh;
+    width: 100vw;
+    background: black;
+    color: white;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     font-family: sans-serif;
-    text-align: center;
-    padding: 20px;
+  }
+
+  .logo {
+    width: 100px;
+    margin-bottom: 20px;
   }
 
   button {
-    padding: 15px 25px;
+    padding: 16px 28px;
     font-size: 18px;
-    border-radius: 10px;
+    border-radius: 12px;
     border: none;
-    background: black;
-    color: white;
+    background: white;
+    color: black;
     cursor: pointer;
   }
 
   .hint {
     margin-top: 15px;
-    color: #555;
     font-size: 14px;
+    opacity: 0.7;
   }
 </style>
 
-<div class="container">
-  <h1>Install App</h1>
+<div class="screen">
+  <img src="/rocket.png" class="logo" alt="logo" />
 
-  {#if isAndroid && showButton}
-    <button on:click={installApp}>
-      Install App
-    </button>
-    <div class="hint">Takes 2 seconds ⚡</div>
+  <h1>Astro Camp</h1>
 
-  {:else if isIOS}
-    <p>
-      Tap <b>Share</b> (⬆️) <br />
-      Then <b>Add to Home Screen</b>
-    </p>
+  {#if ready}
+    {#if isAndroid}
+      <button on:click={installApp}>
+        Install App
+      </button>
+      <div class="hint">Quick install ⚡</div>
 
+    {:else if isIOS}
+      <div class="hint">
+        Tap Share ⬆️ <br />
+        Then “Add to Home Screen”
+      </div>
+
+    {:else}
+      <div class="hint">
+        Open on your phone to install
+      </div>
+    {/if}
   {:else}
-    <p>Open this page on your phone to install</p>
+    <div class="hint">Preparing installer...</div>
   {/if}
 </div>
