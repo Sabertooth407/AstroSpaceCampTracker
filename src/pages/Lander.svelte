@@ -117,32 +117,41 @@ overrideSession = override;
 
     onMount(async () => {
 
-    let registration;
-
+let registration;
 
 if ('serviceWorker' in navigator) {
-    registration = await navigator.serviceWorker.register('/sw.js');
-    console.log("SW registered:", registration);
-}
+    try {
+        registration = await navigator.serviceWorker.register('/sw.js');
+        console.log("SW registered:", registration);
 
-const permission = await Notification.requestPermission();
-console.log("Permission:", permission);
+        const permission = await Notification.requestPermission();
+        console.log("Permission:", permission);
 
-if (permission === 'granted') {
+        if (permission === 'granted') {
 
-    const subscription = await registration.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
-    });
+            const existingSub = await registration.pushManager.getSubscription();
 
-    console.log("SUBSCRIPTION:", subscription);
+            let subscription = existingSub;
 
-    await supabase.from('push_tokens').upsert({
-        token: JSON.stringify(subscription)
-    });
+            if (!existingSub) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
+                });
+            }
 
-} else {
-    console.log("User denied notifications — skipping push setup");
+            console.log("SUBSCRIPTION:", subscription);
+
+            await supabase.from('push_tokens').upsert({
+                token: JSON.stringify(subscription)
+            });
+
+        }
+
+    } catch (err) {
+        console.error("Push setup failed:", err);
+        // ❗ IMPORTANT: don't crash app
+    }
 }
 
 
