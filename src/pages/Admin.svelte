@@ -9,31 +9,38 @@
     let crewFile;
     let crewCaption = '';
     let schedule = [];
-    let isAuthorized = false;
+   let isAuthorized = false;
+let loading = true;
 
-    if (data.role === 'Admin') {
-    isAuthorized = true;
-} else {
-    navigate('portal');
-}
-
-    async function protectAdmin() {
+async function protectAdmin() {
     const { data: { user } } = await supabase.auth.getUser();
 
+    // Not logged in
     if (!user) {
         navigate('portal');
         return;
     }
 
+    // Get role
     const { data, error } = await supabase
         .from('users')
         .select('role')
         .eq('id', user.id)
         .single();
 
+    // Not admin
     if (error || !data || data.role !== 'Admin') {
         navigate('portal');
+        return;
     }
+
+    // ✅ Authorized
+    isAuthorized = true;
+
+    // ONLY NOW fetch data
+    await fetchAll();
+
+    loading = false;
 }
 
     async function fetchAll() {
@@ -138,11 +145,9 @@
 
     fetchAll();
 }
-onMount(async () => {
-    await protectAdmin();   // 🔒 MUST RUN FIRST
-    await fetchAll();
+onMount(() => {
+    protectAdmin();
 });
-    onMount(fetchAll);
     
 
 async function forceSession(name) {
@@ -218,7 +223,9 @@ h3 {
     color: #259ad6;
 }
 </style>
-{#if isAuthorized}
+{#if loading}
+    <div style="color:white; padding:20px;">Checking access...</div>
+{:else if isAuthorized}
 <div class="container">
 
     <h2>ADMIN PANEL</h2>
@@ -337,5 +344,5 @@ h3 {
 
 </div>
 {:else}
-    <div>Checking access...</div>
+    <!-- nothing (user already redirected) -->
 {/if}
