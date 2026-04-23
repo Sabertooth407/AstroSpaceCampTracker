@@ -168,7 +168,7 @@ function handleCrewViewerTouchEnd(e) {
 .card img {
     width: 100%;
     height: 70px;
-    object-fit: cover;
+    object-fit: contain;
 }
 
 /* TEXT */
