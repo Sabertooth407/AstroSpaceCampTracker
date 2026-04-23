@@ -97,6 +97,7 @@ async function protectAdmin() {
 
         const formData = new FormData();
 formData.append("file", crewFile);
+uploadProgress = 1;
 
 const xhr = new XMLHttpRequest();
 
@@ -120,7 +121,6 @@ const data = await new Promise((resolve, reject) => {
     xhr.send(formData);
 });
 
-uploadProgress = 0;
 
 if (!data.url) {
     alert("Upload failed");
@@ -140,6 +140,9 @@ await supabase.from('crew_media').insert([
         crewCaption = '';
 
         fetchAll();
+        setTimeout(() => {
+    uploadProgress = 0;
+}, 800);
     }
     
     async function updateStatus(id, status) {
@@ -345,7 +348,7 @@ h3 {
     <input placeholder="Caption (optional)" bind:value={crewCaption} />
 
     <button on:click={uploadCrew}>Upload</button>
-    {#if uploadProgress > 0}
+    {#if uploadProgress > 0 || loading}
     <div class="progress-bar">
         <div class="progress-fill" style="width:{uploadProgress}%"></div>
     </div>
