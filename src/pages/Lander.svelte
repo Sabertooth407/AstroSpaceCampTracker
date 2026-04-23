@@ -128,43 +128,49 @@ function updateCurrentDay() {
     onMount(async () => {
 
 let registration;
-
 if ('serviceWorker' in navigator) {
-    try {
-        registration = await navigator.serviceWorker.register('/sw.js');
-        console.log("SW registered:", registration);
+  try {
+    const registration = await navigator.serviceWorker.register('/sw.js');
+    console.log("✅ SW registered");
 
-        const permission = await Notification.requestPermission();
-        console.log("Permission:", permission);
+    const permission = await Notification.requestPermission();
+    console.log("Permission:", permission);
 
-        if (permission === 'granted') {
-
-            let subscription = await registration.pushManager.getSubscription();
-
-if (subscription) {
-    await subscription.unsubscribe();
-}
-
-subscription = await registration.pushManager.subscribe({
-    userVisibleOnly: true,
-    applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
-});
-
-            console.log("SUBSCRIPTION:", subscription);
-
-            await supabase
-  .from('push_tokens')
-  .upsert(
-    { token: JSON.stringify(subscription) },
-    { onConflict: 'token' }
-  );
-
-        }
-
-    } catch (err) {
-        console.error("Push setup failed:", err);
-        // ❗ IMPORTANT: don't crash app
+    if (permission !== 'granted') {
+      console.log("❌ Permission not granted");
+      return;
     }
+
+    // 🔥 FORCE fresh subscription
+    let subscription = await registration.pushManager.getSubscription();
+
+    if (subscription) {
+      console.log("Old subscription found → removing");
+      await subscription.unsubscribe();
+    }
+
+    subscription = await registration.pushManager.subscribe({
+      userVisibleOnly: true,
+      applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
+    });
+
+    console.log("✅ NEW SUB:", subscription);
+
+    const { error } = await supabase
+      .from('push_tokens')
+      .insert({
+        token: JSON.stringify(subscription)
+      });
+
+    if (error) {
+      console.error("❌ Supabase insert failed:", error);
+    } else {
+      console.log("✅ Token saved to DB");
+    }
+
+  } catch (err) {
+    console.error("❌ Push setup failed FULL:", err);
+  }
 }
 
 updateCurrentDay();
