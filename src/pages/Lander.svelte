@@ -139,16 +139,16 @@ if ('serviceWorker' in navigator) {
 
         if (permission === 'granted') {
 
-            const existingSub = await registration.pushManager.getSubscription();
+            let subscription = await registration.pushManager.getSubscription();
 
-            let subscription = existingSub;
+if (subscription) {
+    await subscription.unsubscribe();
+}
 
-            if (!existingSub) {
-                subscription = await registration.pushManager.subscribe({
-                    userVisibleOnly: true,
-                    applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
-                });
-            }
+subscription = await registration.pushManager.subscribe({
+    userVisibleOnly: true,
+    applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
+});
 
             console.log("SUBSCRIPTION:", subscription);
 
