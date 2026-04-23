@@ -30,20 +30,13 @@ self.addEventListener("fetch", (event) => {
 
 
 self.addEventListener('push', function(event) {
-  let data = {};
-
-  try {
-    data = event.data ? event.data.json() : {};
-    console.log("Push received:", data);
-  } catch (e) {
-    console.error("Push parse failed:", e);
-  }
+  const data = event.data.json();
 
   self.registration.showNotification(data.title || "New Notification", {
     body: data.body || "Something happened",
     icon: '/asc-logo-color.svg',
     data: {
-      url: data.url || "/"
+      url: data.url
     }
   });
 });

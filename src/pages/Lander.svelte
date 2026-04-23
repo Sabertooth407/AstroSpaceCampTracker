@@ -125,68 +125,43 @@ function updateCurrentDay() {
         Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1;
 }
 
-function urlBase64ToUint8Array(base64String) {
-  const padding = '='.repeat((4 - base64String.length % 4) % 4);
-  const base64 = (base64String + padding)
-    .replace(/-/g, '+')
-    .replace(/_/g, '/');
-
-  const rawData = atob(base64);
-  const outputArray = new Uint8Array(rawData.length);
-
-  for (let i = 0; i < rawData.length; ++i) {
-    outputArray[i] = rawData.charCodeAt(i);
-  }
-
-  return outputArray;
-}
-
     onMount(async () => {
 
 let registration;
+
 if ('serviceWorker' in navigator) {
-  try {
-    const registration = await navigator.serviceWorker.register('/sw.js');
-    console.log("✅ SW registered");
+    try {
+        registration = await navigator.serviceWorker.register('/sw.js');
+        console.log("SW registered:", registration);
 
-    const permission = await Notification.requestPermission();
-    console.log("Permission:", permission);
+        const permission = await Notification.requestPermission();
+        console.log("Permission:", permission);
 
-    if (permission !== 'granted') {
-      console.log("❌ Permission not granted");
-      return;
+        if (permission === 'granted') {
+
+            const existingSub = await registration.pushManager.getSubscription();
+
+            let subscription = existingSub;
+
+            if (!existingSub) {
+                subscription = await registration.pushManager.subscribe({
+                    userVisibleOnly: true,
+                    applicationServerKey: urlBase64ToUint8Array("BDCztLxfEcpQ5ajQwvfhYhh0EiZJKXHXRrycNy-MGn7cRuu5-WzTCVq7gsZbwyHJN4krW2ODxiJ7B5W2j2Heqyo")
+                });
+            }
+
+            console.log("SUBSCRIPTION:", subscription);
+
+            await supabase.from('push_tokens').upsert({
+                token: JSON.stringify(subscription)
+            });
+
+        }
+
+    } catch (err) {
+        console.error("Push setup failed:", err);
+        // ❗ IMPORTANT: don't crash app
     }
-
-    // 🔥 FORCE fresh subscription
-    let subscription = await registration.pushManager.getSubscription();
-
-    if (subscription) {
-      console.log("Old subscription found → removing");
-      await subscription.unsubscribe();
-    }
-
-    subscription = await registration.pushManager.subscribe({
-      userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array("BDCztLxfEcpQ5ajQwvfhYhh0EiZJKXHXRrycNy-MGn7cRuu5-WzTCVq7gsZbwyHJN4krW2ODxiJ7B5W2j2Heqyo")
-    });
-
-    console.log("✅ NEW SUB:", subscription);
-
-    const { error } = await supabase
-      .from('push_tokens')
-      .insert({
-        token: JSON.stringify(subscription)
-      });
-
-    if (error) {
-      console.error("❌ Supabase insert failed:", error);
-    } else {
-      console.log("✅ Token saved to DB");
-    }
-
-  } catch (err) {
-    console.error("❌ Push setup failed FULL:", err);
-  }
 }
 
 updateCurrentDay();
