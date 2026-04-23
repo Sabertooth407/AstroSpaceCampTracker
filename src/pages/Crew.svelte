@@ -299,7 +299,7 @@ function handleCrewViewerTouchEnd(e) {
         <div class="grid students-grid">
             {#each students as p, i}
                 <div class="card" on:click={() => openCrewViewer(i)}>
-        <img src={p.image_url} />
+        <img src={p.image_url} loading="lazy" />
         <div class="name">{p.name}</div>
         <div class="role">{p.team}</div>
     </div>
@@ -333,7 +333,7 @@ function handleCrewViewerTouchEnd(e) {
         on:touchend={handleCrewViewerTouchEnd}
     >
 
-        <img src={selectedCrew[crewViewerIndex].image_url} />
+        <img src={selectedCrew[crewViewerIndex].image_url} loading="lazy" />
 
         <div class="viewer-name">
             {selectedCrew[crewViewerIndex].name}
