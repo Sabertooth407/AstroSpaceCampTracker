@@ -95,27 +95,27 @@ async function protectAdmin() {
         const fileExt = crewFile.name.split('.').pop();
         const fileName = `${Date.now()}.${fileExt}`;
 
-        const { error } = await supabase.storage
-            .from('media')
-            .upload(fileName, crewFile, {
-                contentType: crewFile.type
-            });
+        const formData = new FormData();
+formData.append("file", crewFile);
 
-        if (error) {
-            alert("Upload failed");
-            return;
-        }
+const res = await fetch("https://astrospacecamptracker.onrender.com/upload", {
+    method: "POST",
+    body: formData
+});
 
-        const { data } = supabase.storage
-            .from('media')
-            .getPublicUrl(fileName);
+const data = await res.json();
 
-        await supabase.from('crew_media').insert([
-            {
-                image_url: data.publicUrl,
-                caption: crewCaption
-            }
-        ]);
+if (!data.url) {
+    alert("Upload failed");
+    return;
+}
+
+await supabase.from('crew_media').insert([
+    {
+        image_url: data.url,
+        caption: crewCaption
+    }
+]);
 
         alert("Uploaded");
 

@@ -56,23 +56,23 @@ let loadingPage = true;
             const fileExt = file.name.split('.').pop();
             const fileName = `${Date.now()}-${Math.random()}.${fileExt}`;
 
-            const { error } = await supabase.storage
-                .from('media')
-                .upload(fileName, file, {
-                    contentType: file.type
-                });
+            const formData = new FormData();
+formData.append("file", file);
 
-            if (error) {
-                alert("Upload failed");
-                loading = false;
-                return;
-            }
+const res = await fetch("https://astrospacecamptracker.onrender.com/upload", {
+    method: "POST",
+    body: formData
+});
 
-            const { data } = supabase.storage
-                .from('media')
-                .getPublicUrl(fileName);
+const data = await res.json();
 
-            mediaUrls.push(data.publicUrl);
+if (!data.url) {
+    alert("Upload failed");
+    loading = false;
+    return;
+}
+
+mediaUrls.push(data.url);
         }
 
         const { data: { user } } = await supabase.auth.getUser();

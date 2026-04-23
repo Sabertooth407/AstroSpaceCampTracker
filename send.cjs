@@ -1,11 +1,30 @@
+const multer = require('multer');
+const cors = require('cors');
+const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
+
+
+const upload = multer();
+
+
+
 const webpush = require('web-push');
 const { createClient } = require('@supabase/supabase-js');
 const express = require('express');
 const app = express();
+app.use(cors());
 const supabase = createClient(
   'https://oclwbllfeslheerxhzbv.supabase.co',
   'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im9jbHdibGxmZXNsaGVlcnhoemJ2Iiwicm9sZSI6InNlcnZpY2Vfcm9sZSIsImlhdCI6MTc3NjA1ODMyNCwiZXhwIjoyMDkxNjM0MzI0fQ.RuJ1NnNbmbFrRQksj2dnRnQe7p_IUCMlWMrbe97zgtw' // keep this secret
 );
+
+const s3 = new S3Client({
+  region: "auto",
+  endpoint: "https://baec01b90a1b2fe64b2667b48849f2a6.r2.cloudflarestorage.com",
+  credentials: {
+    accessKeyId: "1e0160e2c1687febf9c48d9bf5093404",
+    secretAccessKey: "79cd2095ee427f0cf1ad23caf3c718e9dd4243dbbc718f770284a8b097221768"
+  }
+});
 
 webpush.setVapidDetails(
   'mailto:test@test.com',
@@ -132,6 +151,29 @@ const PORT = process.env.PORT || 3000;
 
 app.get('/', (req, res) => {
   res.send("🚀 Push server running");
+});
+
+app.post('/upload', upload.single('file'), async (req, res) => {
+  try {
+    const file = req.file;
+
+    const key = `${Date.now()}-${Math.random()}-${file.originalname}`;
+
+    await s3.send(new PutObjectCommand({
+      Bucket: "astro-space-camp",
+      Key: key,
+      Body: file.buffer,
+      ContentType: file.mimetype
+    }));
+
+    const fileUrl = `https://pub-ebdd37b7c49a438a99c76081ee0c44eb.r2.dev/${key}`;
+
+    res.json({ url: fileUrl });
+
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Upload failed" });
+  }
 });
 
 app.listen(PORT, () => {
