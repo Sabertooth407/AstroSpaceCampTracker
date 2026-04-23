@@ -44,7 +44,7 @@ self.addEventListener('push', function(event) {
 self.addEventListener('notificationclick', function(event) {
   event.notification.close();
 
-  const url = event.notification.data?.url || "https://astro-space-camp-tracker.vercel.app/";
+  const url = event.notification.data?.url || "https://asc2026.vercel.app/";
 
   event.waitUntil(
     clients.openWindow(url)
