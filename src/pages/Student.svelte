@@ -51,7 +51,9 @@ let uploadProgress = 0;
         const finalContent = content;
 
         let mediaUrls = [];
-
+let totalFiles = files.slice(0, 5).length;
+let completedFiles = 0;
+uploadProgress = 1;
         for (let file of files.slice(0, 5)) {
 
             const fileExt = file.name.split('.').pop();
@@ -64,11 +66,15 @@ const xhr = new XMLHttpRequest();
 
 const promise = new Promise((resolve, reject) => {
 
-    xhr.upload.onprogress = (e) => {
-        if (e.lengthComputable) {
-            uploadProgress = Math.round((e.loaded / e.total) * 100);
-        }
-    };
+   xhr.upload.onprogress = (e) => {
+    if (e.lengthComputable) {
+        const currentFileProgress = e.loaded / e.total;
+        const overallProgress =
+            (completedFiles + currentFileProgress) / totalFiles;
+
+        uploadProgress = Math.round(overallProgress * 100);
+    }
+};
 
     xhr.onload = () => {
         const res = JSON.parse(xhr.responseText);
@@ -85,7 +91,9 @@ const promise = new Promise((resolve, reject) => {
 const url = await promise;
 
 mediaUrls.push(url);
-uploadProgress = 0; // reset after each file
+
+completedFiles++;
+uploadProgress = Math.round((completedFiles / totalFiles) * 100);
         }
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -109,6 +117,9 @@ await supabase.from('posts').insert([
         content = '';
         files = [];
         loading = false;
+        setTimeout(() => {
+    uploadProgress = 0;
+}, 800);
     }
 
     let myPosts = [];
@@ -301,7 +312,7 @@ button:disabled {
     <button on:click={submitPost} disabled={loading}>
         {loading ? "Posting..." : "Submit"}
     </button>
-    {#if uploadProgress > 0}
+    {#if loading}
     <div class="progress-bar">
         <div class="progress-fill" style="width:{uploadProgress}%"></div>
     </div>
