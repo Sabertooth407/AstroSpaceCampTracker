@@ -152,9 +152,12 @@ if ('serviceWorker' in navigator) {
 
             console.log("SUBSCRIPTION:", subscription);
 
-            await supabase.from('push_tokens').upsert({
-                token: JSON.stringify(subscription)
-            });
+            await supabase
+  .from('push_tokens')
+  .upsert(
+    { token: JSON.stringify(subscription) },
+    { onConflict: 'token' }
+  );
 
         }
 

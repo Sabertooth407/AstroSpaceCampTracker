@@ -54,62 +54,30 @@ async function sendToAll(payload) {
 }
 
 async function checkAndSend() {
+  console.log("Checking DB...");
 
   const { data: posts } = await supabase
-  .from('posts')
-  .select('*')
-  .eq('status', 'approved')
-  .eq('notified', false);
-
-for (const p of posts || []) {
-  await sendToAll({
-    title: "New Mission Log",
-    body: p.content || "New post uploaded",
-    url: "https://asc2026.vercel.app/"
-  });
-
-  await supabase
     .from('posts')
-    .update({ notified: true })
-    .eq('id', p.id);
-}
+    .select('*')
+    .eq('status', 'approved')
+    .eq('notified', false);
+
+  console.log("Posts:", posts?.length);
 
   const { data: alerts } = await supabase
-  .from('alerts')
-  .select('*')
-  .eq('notified', false);
-
-for (const a of alerts || []) {
-  await sendToAll({
-    title: "Alert",
-    body: a.text || "New alert",
-    url: "https://asc2026.vercel.app/"
-  });
-
-  await supabase
     .from('alerts')
-    .update({ notified: true })
-    .eq('id', a.id);
-}
+    .select('*')
+    .eq('notified', false);
+
+  console.log("Alerts:", alerts?.length);
 
   const { data: sessions } = await supabase
-  .from('schedule')
-  .select('*')
-  .eq('status', 'ongoing')
-  .eq('notified', false);
-
-for (const s of sessions || []) {
-  await sendToAll({
-    title: "Session Live",
-    body: s.session_name || "Session started",
-    url: "https://asc2026.vercel.app/"
-  });
-
-  await supabase
     .from('schedule')
-    .update({ notified: true })
-    .eq('id', s.id);
-}
+    .select('*')
+    .eq('status', 'ongoing')
+    .eq('notified', false);
+
+  console.log("Sessions:", sessions?.length);
 }
 
 setInterval(() => {
@@ -120,11 +88,7 @@ setInterval(() => {
 
 console.log("🚀 Push server running...");
 
-setInterval(() => {
-  checkAndSend().catch(err => {
-    console.error("Loop error:", err);
-  });
-}, 10000);
+
 
 const PORT = process.env.PORT || 3000;
 
@@ -137,9 +101,11 @@ app.listen(PORT, () => {
 });
 
 app.get('/test', async (req, res) => {
+  console.log("TEST TRIGGERED");
+
   await sendToAll({
     title: "TEST PUSH",
-    body: "If you see this → everything works",
+    body: "If you see this → working",
     url: "/"
   });
 
