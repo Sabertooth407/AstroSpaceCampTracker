@@ -135,3 +135,13 @@ app.get('/', (req, res) => {
 app.listen(PORT, () => {
   console.log("Server running on port", PORT);
 });
+
+app.get('/test', async (req, res) => {
+  await sendToAll({
+    title: "TEST PUSH",
+    body: "If you see this → everything works",
+    url: "/"
+  });
+
+  res.send("Test sent");
+});
