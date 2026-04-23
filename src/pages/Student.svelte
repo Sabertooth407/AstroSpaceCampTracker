@@ -4,6 +4,7 @@
 
     let isAuthorized = false;
 let loadingPage = true;
+let uploadProgress = 0;
 
     let name = '';
     let activity = '';
@@ -59,20 +60,32 @@ let loadingPage = true;
             const formData = new FormData();
 formData.append("file", file);
 
-const res = await fetch("https://astrospacecamptracker.onrender.com/upload", {
-    method: "POST",
-    body: formData
+const xhr = new XMLHttpRequest();
+
+const promise = new Promise((resolve, reject) => {
+
+    xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+            uploadProgress = Math.round((e.loaded / e.total) * 100);
+        }
+    };
+
+    xhr.onload = () => {
+        const res = JSON.parse(xhr.responseText);
+        if (res.url) resolve(res.url);
+        else reject();
+    };
+
+    xhr.onerror = () => reject();
+
+    xhr.open("POST", "https://astrospacecamptracker.onrender.com/upload");
+    xhr.send(formData);
 });
 
-const data = await res.json();
+const url = await promise;
 
-if (!data.url) {
-    alert("Upload failed");
-    loading = false;
-    return;
-}
-
-mediaUrls.push(data.url);
+mediaUrls.push(url);
+uploadProgress = 0; // reset after each file
         }
 
         const { data: { user } } = await supabase.auth.getUser();
@@ -233,6 +246,20 @@ button:disabled {
     font-size: 12px;
     cursor: pointer;
 }
+
+.progress-bar {
+    height: 8px;
+    background: #1e293b;
+    margin-top: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #259ad6;
+    transition: width 0.2s;
+}
 </style>
 {#if loadingPage}
     <div style="color:white; padding:20px;">Checking access...</div>
@@ -274,6 +301,14 @@ button:disabled {
     <button on:click={submitPost} disabled={loading}>
         {loading ? "Posting..." : "Submit"}
     </button>
+    {#if uploadProgress > 0}
+    <div class="progress-bar">
+        <div class="progress-fill" style="width:{uploadProgress}%"></div>
+    </div>
+    <div style="font-size:12px; margin-top:4px;">
+        Uploading: {uploadProgress}%
+    </div>
+{/if}
 
     <br><br>
 

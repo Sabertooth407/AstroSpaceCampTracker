@@ -2,7 +2,7 @@
     import { onMount } from 'svelte';
     import { supabase } from '../lib/supabase';
     export let navigate;
-
+    let uploadProgress = 0;
     let pendingPosts = [];
     let approvedPosts = [];
     let alertText = '';
@@ -98,12 +98,29 @@ async function protectAdmin() {
         const formData = new FormData();
 formData.append("file", crewFile);
 
-const res = await fetch("https://astrospacecamptracker.onrender.com/upload", {
-    method: "POST",
-    body: formData
+const xhr = new XMLHttpRequest();
+
+const data = await new Promise((resolve, reject) => {
+
+    xhr.upload.onprogress = (e) => {
+        if (e.lengthComputable) {
+            uploadProgress = Math.round((e.loaded / e.total) * 100);
+        }
+    };
+
+    xhr.onload = () => {
+        const res = JSON.parse(xhr.responseText);
+        if (res.url) resolve(res);
+        else reject();
+    };
+
+    xhr.onerror = () => reject();
+
+    xhr.open("POST", "https://astrospacecamptracker.onrender.com/upload");
+    xhr.send(formData);
 });
 
-const data = await res.json();
+uploadProgress = 0;
 
 if (!data.url) {
     alert("Upload failed");
@@ -230,6 +247,20 @@ button {
 h3 {
     color: #259ad6;
 }
+
+.progress-bar {
+    height: 8px;
+    background: #1e293b;
+    margin-top: 10px;
+    border-radius: 4px;
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    background: #259ad6;
+    transition: width 0.2s;
+}
 </style>
 {#if loading}
     <div style="color:white; padding:20px;">Checking access...</div>
@@ -314,6 +345,14 @@ h3 {
     <input placeholder="Caption (optional)" bind:value={crewCaption} />
 
     <button on:click={uploadCrew}>Upload</button>
+    {#if uploadProgress > 0}
+    <div class="progress-bar">
+        <div class="progress-fill" style="width:{uploadProgress}%"></div>
+    </div>
+    <div style="font-size:12px; margin-top:4px;">
+        Uploading: {uploadProgress}%
+    </div>
+{/if}
 </div>
 <div class="section">
 <h3>Force Current Session</h3>
