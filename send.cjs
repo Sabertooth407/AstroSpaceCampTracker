@@ -65,7 +65,7 @@ for (const p of posts || []) {
   await sendToAll({
     title: "New Mission Log",
     body: p.content || "New post uploaded",
-    url: "https://astro-space-camp-tracker.vercel.app/"
+    url: "https://asc2026.vercel.app/"
   });
 
   await supabase
@@ -83,7 +83,7 @@ for (const a of alerts || []) {
   await sendToAll({
     title: "Alert",
     body: a.text || "New alert",
-    url: "https://astro-space-camp-tracker.vercel.app/"
+    url: "https://asc2026.vercel.app/"
   });
 
   await supabase
@@ -102,7 +102,7 @@ for (const s of sessions || []) {
   await sendToAll({
     title: "Session Live",
     body: s.session_name || "Session started",
-    url: "https://astro-space-camp-tracker.vercel.app"
+    url: "https://asc2026.vercel.app/"
   });
 
   await supabase
