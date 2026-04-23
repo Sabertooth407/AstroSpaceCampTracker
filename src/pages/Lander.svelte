@@ -167,7 +167,7 @@ if ('serviceWorker' in navigator) {
 
     subscription = await registration.pushManager.subscribe({
       userVisibleOnly: true,
-      applicationServerKey: urlBase64ToUint8Array("BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4")
+      applicationServerKey: urlBase64ToUint8Array("BDCztLxfEcpQ5ajQwvfhYhh0EiZJKXHXRrycNy-MGn7cRuu5-WzTCVq7gsZbwyHJN4krW2ODxiJ7B5W2j2Heqyo")
     });
 
     console.log("✅ NEW SUB:", subscription);

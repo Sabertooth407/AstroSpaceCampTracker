@@ -9,8 +9,8 @@ const supabase = createClient(
 
 webpush.setVapidDetails(
   'mailto:test@test.com',
-  'BMKW8Snx4rYm7G9rIosndIkfrRIYYt3BIpey-A62Kgid1W9m66YWizh062d-WfaFo0frvVC-3HhN4wC5m5lwwU4',
-  '6NDLripLHwQesWIGt9pT1MD8BnEvnT7sEkws50l-NUM'
+  'BDCztLxfEcpQ5ajQwvfhYhh0EiZJKXHXRrycNy-MGn7cRuu5-WzTCVq7gsZbwyHJN4krW2ODxiJ7B5W2j2Heqyo',
+  'PXiro22utbjYd71HRwPYHwmhZGHrnzwUENOHZNfWP1M'
 );
 
 async function sendToAll(payload) {
