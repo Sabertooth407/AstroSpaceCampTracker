@@ -62,16 +62,16 @@ async function checkAndSend() {
   .eq('notified', false);
 
 for (const p of posts || []) {
-  await sendToAll({
-    title: "New Mission Log",
-    body: p.content || "New post uploaded",
-    url: "https://asc2026.vercel.app/"
-  });
-
   await supabase
-    .from('posts')
-    .update({ notified: true })
-    .eq('id', p.id);
+  .from('posts')
+  .update({ notified: true })
+  .eq('id', p.id);
+
+await sendToAll({
+  title: "New Mission Log",
+  body: p.content || "New post uploaded",
+  url: "https://asc2026.vercel.app/"
+});
 }
 
   const { data: alerts } = await supabase
@@ -80,16 +80,16 @@ for (const p of posts || []) {
   .eq('notified', false);
 
 for (const a of alerts || []) {
+  await supabase
+    .from('alerts')
+    .update({ notified: true })
+    .eq('id', a.id);
+
   await sendToAll({
     title: "Alert",
     body: a.text || "New alert",
     url: "https://asc2026.vercel.app/"
   });
-
-  await supabase
-    .from('alerts')
-    .update({ notified: true })
-    .eq('id', a.id);
 }
 
   const { data: sessions } = await supabase
@@ -99,31 +99,33 @@ for (const a of alerts || []) {
   .eq('notified', false);
 
 for (const s of sessions || []) {
+  await supabase
+    .from('schedule')
+    .update({ notified: true })
+    .eq('id', s.id);
+  
   await sendToAll({
     title: "Session Live",
     body: s.session_name || "Session started",
     url: "https://asc2026.vercel.app/"
   });
-
-  await supabase
-    .from('schedule')
-    .update({ notified: true })
-    .eq('id', s.id);
 }
 }
 
-setInterval(() => {
-  checkAndSend().catch(err => {
-    console.error("Loop error:", err);
-  });
-}, 5000);
+let isChecking = false;
 
-console.log("🚀 Push server running...");
+setInterval(async () => {
+  if (isChecking) return;
 
-setInterval(() => {
-  checkAndSend().catch(err => {
+  isChecking = true;
+
+  try {
+    await checkAndSend();
+  } catch (err) {
     console.error("Loop error:", err);
-  });
+  }
+
+  isChecking = false;
 }, 10000);
 
 const PORT = process.env.PORT || 3000;
