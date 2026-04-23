@@ -34,8 +34,9 @@ self.addEventListener('push', function(event) {
 
   try {
     data = event.data ? event.data.json() : {};
+    console.log("Push received:", data);
   } catch (e) {
-    console.error("Push parse error:", e);
+    console.error("Push parse failed:", e);
   }
 
   self.registration.showNotification(data.title || "New Notification", {
