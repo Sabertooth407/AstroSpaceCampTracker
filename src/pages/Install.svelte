@@ -37,7 +37,6 @@
   .screen {
     height: 100vh;
     width: 100vw;
-    background: black;
     color: white;
     display: flex;
     flex-direction: column;

@@ -1,6 +1,6 @@
 <script>
   import { onMount } from 'svelte';
-
+  import Background from './pages/Background.svelte';
   import Loader from './pages/Loader.svelte';
   import Lander from './pages/Lander.svelte';
   import Portal from './pages/Portal.svelte';
@@ -77,7 +77,7 @@
     height: 0px;
   }
 </style>
-
+<Background />
 {#if page === 'loader'}
   <Loader />
 
