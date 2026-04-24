@@ -11,7 +11,7 @@ let uploadProgress = 0;
     let content = '';
     let files = [];
     let loading = false; 
-
+    const MAX_POST_SIZE = 20 * 1024 * 1024; // 20MB
     async function protectStudent() {
     const { data: { user } } = await supabase.auth.getUser();
 
@@ -51,6 +51,15 @@ let uploadProgress = 0;
         const finalContent = content;
 
         let mediaUrls = [];
+        let totalSize = files
+    .slice(0, 5)
+    .reduce((sum, f) => sum + f.size, 0);
+
+if (totalSize > MAX_POST_SIZE) {
+    alert("Total upload size exceeds 20MB");
+    loading = false;
+    return;
+}
 let totalFiles = files.slice(0, 5).length;
 let completedFiles = 0;
 uploadProgress = 1;

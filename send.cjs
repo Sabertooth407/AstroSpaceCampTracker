@@ -3,7 +3,11 @@ const cors = require('cors');
 const { S3Client, PutObjectCommand } = require('@aws-sdk/client-s3');
 
 
-const upload = multer();
+const upload = multer({
+  limits: {
+    fileSize: 20 * 1024 * 1024 // 20MB per file
+  }
+});
 
 
 
@@ -152,6 +156,14 @@ const PORT = process.env.PORT || 3000;
 app.get('/', (req, res) => {
   res.send("🚀 Push server running");
 });
+
+if (!req.file) {
+  return res.status(400).json({ error: "No file" });
+}
+
+if (req.file.size > 20 * 1024 * 1024) {
+  return res.status(400).json({ error: "File too large (max 20MB)" });
+}
 
 app.post('/upload', upload.single('file'), async (req, res) => {
   try {
