@@ -1,113 +1,112 @@
 <script>
+    import * as THREE from 'three';
     import { onMount } from 'svelte';
 
-    let canvas, ctx;
+    let scene, camera, renderer, stars = [];
+    let canvas;
 
-    const STAR_COUNT = 300;
-    let stars = [];
+    let speed = 5;
+    let boost = false;
 
-    function createStar() {
-        return {
-            x: (Math.random() - 0.5) * canvas.width,
-            y: (Math.random() - 0.5) * canvas.height,
-            z: Math.random() * canvas.width,
-            size: Math.random() * 1.2 + 0.3
-        };
-    }
+    // ⭐ MUCH faster than 50k meshes
+    const STAR_COUNT = 12000;
 
-    function init() {
-        stars = [];
+    const initStars = () => {
+        const geometry = new THREE.BufferGeometry();
+        const positions = new Float32Array(STAR_COUNT * 3);
+
         for (let i = 0; i < STAR_COUNT; i++) {
-            stars.push(createStar());
+            positions[i * 3] = (Math.random() - 0.5) * 2000;
+            positions[i * 3 + 1] = (Math.random() - 0.5) * 2000;
+            positions[i * 3 + 2] = Math.random() * 2000;
         }
-    }
 
-    function draw() {
-        ctx.fillStyle = "#020617";
-        ctx.fillRect(0, 0, canvas.width, canvas.height);
+        geometry.setAttribute('position', new THREE.BufferAttribute(positions, 3));
 
-        for (let star of stars) {
-            star.z -= 2; // 🚀 forward motion
+        const material = new THREE.PointsMaterial({
+            color: 0xffffff,
+            size: 1.2,
+            transparent: true,
+            opacity: 0.9,
+            depthWrite: false
+        });
 
-            if (star.z <= 1) {
-                Object.assign(star, createStar(), { z: canvas.width });
+        const points = new THREE.Points(geometry, material);
+        stars.push(points);
+        scene.add(points);
+    };
+
+    const animateStars = () => {
+        stars.forEach(points => {
+            const positions = points.geometry.attributes.position.array;
+
+            for (let i = 0; i < STAR_COUNT; i++) {
+                positions[i * 3 + 2] -= boost ? speed * 4 : speed;
+
+                if (positions[i * 3 + 2] < -500) {
+                    positions[i * 3 + 2] = 1500;
+                }
             }
 
-            const k = 128 / star.z;
-
-            const x = star.x * k + canvas.width / 2;
-            const y = star.y * k + canvas.height / 2;
-
-            if (x < 0 || x > canvas.width || y < 0 || y > canvas.height) continue;
-
-            const size = star.size * k;
-
-            // ✨ glow
-            const gradient = ctx.createRadialGradient(x, y, 0, x, y, size * 3);
-            gradient.addColorStop(0, "rgba(255,255,255,0.9)");
-            gradient.addColorStop(1, "rgba(255,255,255,0)");
-
-            ctx.fillStyle = gradient;
-            ctx.beginPath();
-            ctx.arc(x, y, size, 0, Math.PI * 2);
-            ctx.fill();
-        }
-
-        requestAnimationFrame(draw);
-    }
-
-    function resize() {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        init();
-    }
+            points.geometry.attributes.position.needsUpdate = true;
+        });
+    };
 
     onMount(() => {
-        ctx = canvas.getContext("2d");
-        resize();
-        draw();
-        window.addEventListener("resize", resize);
+        scene = new THREE.Scene();
+
+        camera = new THREE.PerspectiveCamera(
+            75,
+            window.innerWidth / window.innerHeight,
+            0.1,
+            2000
+        );
+        camera.position.z = 5;
+
+        renderer = new THREE.WebGLRenderer({ canvas, antialias: true, alpha: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        renderer.setPixelRatio(window.devicePixelRatio);
+
+        // 🌌 NICE SPACE BACKGROUND (THIS FIXES YOUR MAIN ISSUE)
+        scene.background = new THREE.Color(0x020617);
+
+        // subtle fog for depth
+        scene.fog = new THREE.FogExp2(0x020617, 0.0008);
+
+        initStars();
+
+        const animate = () => {
+            requestAnimationFrame(animate);
+
+            animateStars();
+
+            renderer.render(scene, camera);
+        };
+
+        animate();
+
+        // ⚡ BOOST ON CLICK
+        window.addEventListener('mousedown', () => boost = true);
+        window.addEventListener('mouseup', () => boost = false);
+
+        // resize
+        window.addEventListener('resize', () => {
+            renderer.setSize(window.innerWidth, window.innerHeight);
+            camera.aspect = window.innerWidth / window.innerHeight;
+            camera.updateProjectionMatrix();
+        });
     });
 </script>
 
-<div class="bg">
-    <canvas bind:this={canvas}></canvas>
-    <div class="nebula"></div>
-</div>
+<canvas bind:this={canvas}></canvas>
 
 <style>
-.bg {
+canvas {
     position: fixed;
     inset: 0;
     z-index: -1;
-    overflow: hidden;
-}
-
-/* canvas layer */
-canvas {
-    position: absolute;
-    inset: 0;
-}
-
-/* 🌌 subtle nebula */
-.nebula {
-    position: absolute;
-    inset: 0;
-    pointer-events: none;
-
-    background:
-        radial-gradient(circle at 20% 30%, rgba(37,154,214,0.15), transparent 50%),
-        radial-gradient(circle at 80% 70%, rgba(253,193,52,0.12), transparent 50%);
-
-    filter: blur(50px);
-    opacity: 0.6;
-
-    animation: drift 40s linear infinite;
-}
-
-@keyframes drift {
-    0% { transform: translate(0,0); }
-    50% { transform: translate(-30px, 20px); }
-    100% { transform: translate(0,0); }
+    width: 100vw;
+    height: 100vh;
+    display: block;
 }
 </style>
