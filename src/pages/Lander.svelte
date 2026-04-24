@@ -412,6 +412,7 @@ async function downloadImage(url, name = 'download') {
 .logo img {
     height: 40px;
     filter: drop-shadow(0 0 6px #259ad68e);
+    cursor: pointer;
 }
 
 
@@ -1035,8 +1036,10 @@ async function downloadImage(url, name = 'download') {
     <div class="title">MISSION LOG</div>
 
     <div class="logo">
+    <a href="https://astrospacecamp.com" target="_blank">
         <img src="/asc-logo-color.svg" />
-    </div>
+    </a>
+</div>
 </div>
 
 
