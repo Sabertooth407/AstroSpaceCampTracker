@@ -119,11 +119,17 @@ function handleCrewViewerTouchEnd(e) {
 /* PAGE */
 .page {
     padding: 12px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 /* SECTION */
 .section {
     margin-bottom: 24px;
+    width: 100%;
+    max-width: 1000px;
+    text-align: center;
 }
 
 .section-title {
@@ -137,7 +143,8 @@ function handleCrewViewerTouchEnd(e) {
 /* GRID BASE */
 .grid {
     display: grid;
-    gap: 8px;
+    gap: 10px;
+    justify-content: center;
 }
 
 /* STUDENTS GRID */
@@ -157,6 +164,9 @@ function handleCrewViewerTouchEnd(e) {
     text-align: center;
     padding: 4px;
     transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
 }
 
 .card:hover {
@@ -180,6 +190,27 @@ function handleCrewViewerTouchEnd(e) {
 .role {
     font-size: 10px;
     color: #64748b;
+}
+
+.name, .role {
+    text-align: center;
+}
+
+/* coming soon style */
+.coming-soon {
+    font-size: 22px;
+    letter-spacing: 4px;
+    margin-top: 20px;
+
+    color: #38bdf8;
+
+    text-transform: uppercase;
+
+    /* glow */
+    text-shadow: 
+        0 0 5px #38bdf8,
+        0 0 10px #38bdf8,
+        0 0 20px rgba(56,189,248,0.5);
 }
 
 .viewer {
@@ -295,17 +326,24 @@ function handleCrewViewerTouchEnd(e) {
 
     <!-- STUDENTS FIRST -->
     <div class="section">
-        <div class="section-title">CREW MEMBERS</div>
+    <div class="section-title">CREW MEMBERS</div>
+
+    {#if students.length === 0 || students.every(s => !s.image_url)}
+        <div class="coming-soon">SPACE CREW IS SUITING UP!</div>
+    {:else}
         <div class="grid students-grid">
             {#each students as p, i}
-                <div class="card" on:click={() => openCrewViewer(i)}>
-        <img src={p.image_url} loading="lazy" />
-        <div class="name">{p.name}</div>
-        <div class="role">{p.team}</div>
-    </div>
+                {#if p.image_url}
+                    <div class="card" on:click={() => openCrewViewer(i)}>
+                        <img src={p.image_url} loading="lazy" />
+                        <div class="name">{p.name}</div>
+                        <div class="role">{p.team}</div>
+                    </div>
+                {/if}
             {/each}
         </div>
-    </div>
+    {/if}
+</div>
 
     <!-- MISSION CONTROL -->
     <div class="section">
