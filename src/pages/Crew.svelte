@@ -43,25 +43,43 @@ function prevCrew() {
 }
 
 
-async function downloadImage(url, name = 'crew-image') {
+async function downloadMedia(url, name = 'download') {
     try {
-        const res = await fetch(url);
+        const res = await fetch(url, { mode: 'cors' });
         const blob = await res.blob();
 
         const blobUrl = window.URL.createObjectURL(blob);
 
         const a = document.createElement('a');
         a.href = blobUrl;
-        const extension = url.split('.').pop().split('?')[0];
-a.download = `${name}.${extension}`;
+
+        // detect extension safely
+        let extension = '';
+
+        if (blob.type) {
+            extension = blob.type.split('/')[1]; // image/png → png
+        } else {
+            extension = url.split('.').pop().split('?')[0];
+        }
+
+        // fallback safety
+        if (!extension || extension.length > 5) {
+            extension = 'jpg';
+        }
+
+        a.download = `${name}.${extension}`;
 
         document.body.appendChild(a);
         a.click();
 
         a.remove();
         window.URL.revokeObjectURL(blobUrl);
+
     } catch (err) {
         console.error('Download failed:', err);
+
+        // fallback (opens in new tab if fetch fails)
+        window.open(url, '_blank');
     }
 }
 function handleCrewViewerTouchStart(e) {
@@ -384,7 +402,7 @@ function handleCrewViewerTouchEnd(e) {
 
         <button
     class="download-btn"
-    on:click={() => downloadImage(selectedCrew[crewViewerIndex].image_url, selectedCrew[crewViewerIndex].name)}
+    on:click={() => downloadMedia(selectedCrew[crewViewerIndex].image_url, selectedCrew[crewViewerIndex].name)}
 >
     ⬇ DOWNLOAD
 </button>

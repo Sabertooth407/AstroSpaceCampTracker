@@ -332,9 +332,9 @@ $: todayCompleted = scheduleData.filter(
 $: todayTotal = scheduleData.filter(
     s => s.day === currentDay
 ).length;
-async function downloadImage(url, name = 'download') {
+async function downloadMedia(url, name = 'download') {
     try {
-        const res = await fetch(url);
+        const res = await fetch(url, { mode: 'cors' });
         const blob = await res.blob();
 
         const blobUrl = window.URL.createObjectURL(blob);
@@ -342,7 +342,20 @@ async function downloadImage(url, name = 'download') {
         const a = document.createElement('a');
         a.href = blobUrl;
 
-        const extension = url.split('.').pop().split('?')[0];
+        // detect extension safely
+        let extension = '';
+
+        if (blob.type) {
+            extension = blob.type.split('/')[1]; // image/png → png
+        } else {
+            extension = url.split('.').pop().split('?')[0];
+        }
+
+        // fallback safety
+        if (!extension || extension.length > 5) {
+            extension = 'jpg';
+        }
+
         a.download = `${name}.${extension}`;
 
         document.body.appendChild(a);
@@ -350,8 +363,12 @@ async function downloadImage(url, name = 'download') {
 
         a.remove();
         window.URL.revokeObjectURL(blobUrl);
+
     } catch (err) {
         console.error('Download failed:', err);
+
+        // fallback (opens in new tab if fetch fails)
+        window.open(url, '_blank');
     }
 }
 </script>
@@ -1337,7 +1354,7 @@ async function downloadImage(url, name = 'download') {
         <button
     class="download-btn"
     on:click={() =>
-        downloadImage(
+        downloadMedia(
             selectedPost.media[viewerIndex],
             selectedPost.user
         )
@@ -1375,7 +1392,7 @@ async function downloadImage(url, name = 'download') {
         <button
     class="download-btn"
     on:click={() =>
-        downloadImage(
+        downloadMedia(
             crewImages[crewIndex].image_url,
             'mission-feed'
         )
