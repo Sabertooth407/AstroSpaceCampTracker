@@ -21,9 +21,23 @@ self.addEventListener("activate", (event) => {
 
 // ✅ FETCH (required for PWA installability)
 self.addEventListener("fetch", (event) => {
+  const req = event.request;
+
+  // ❌ Do NOT touch non-GET (POST, PUT, etc.)
+  if (req.method !== "GET") return;
+
+  const url = new URL(req.url);
+
+  // ❌ Do NOT touch external APIs (Supabase, Google, etc.)
+  if (url.origin !== self.location.origin) return;
+
+  // ❌ Do NOT touch websocket / realtime
+  if (url.protocol === "ws:" || url.protocol === "wss:") return;
+
+  // ✅ Only cache your static files
   event.respondWith(
-    caches.match(event.request).then((response) => {
-      return response || fetch(event.request);
+    caches.match(req).then((response) => {
+      return response || fetch(req);
     })
   );
 });
