@@ -180,11 +180,12 @@ function handleCrewViewerTouchEnd(e) {
     background: black;
     border: 1px solid #259ad6;
     text-align: center;
-    padding: 4px;
+    padding: 0;
     transition: 0.2s;
     display: flex;
     flex-direction: column;
     align-items: center;
+    overflow: hidden;
 }
 
 .card:hover {
@@ -195,10 +196,19 @@ function handleCrewViewerTouchEnd(e) {
 /* IMAGE */
 .card img {
     width: 100%;
-    height: 70px;
-    object-fit: contain;
+    aspect-ratio: 3 / 4;
+    object-fit: cover;
+    display: block;
 }
 
+.card .name {
+    margin-top: 8px;
+    padding: 0 6px;
+}
+
+.card .role {
+    padding-bottom: 8px;
+}
 /* TEXT */
 .name {
     font-size: 11px;
@@ -321,9 +331,7 @@ function handleCrewViewerTouchEnd(e) {
         grid-template-columns: repeat(2, 1fr);
     }
 
-    .card img {
-        height: 80px;
-    }
+    
 }
 
 @media (max-width: 768px) {
@@ -371,7 +379,7 @@ function handleCrewViewerTouchEnd(e) {
                 <div class="card" on:click={() => openCrewViewer(i + students.length)}>
         <img src={p.image_url} />
         <div class="name">{p.name}</div>
-        <div class="role">{p.role}</div>
+        
     </div>
             {/each}
         </div>
