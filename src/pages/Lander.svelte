@@ -319,8 +319,8 @@ function handleCrewTouchEnd(e) {
 }
 
 
-let boys = 18;
-let girls = 12;
+let boys = 33;
+let girls = 20;
 
 $: totalPeople = boys + girls;
 $: boysPercent = totalPeople ? (boys / totalPeople) * 100 : 0;
