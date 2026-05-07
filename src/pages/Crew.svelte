@@ -5,15 +5,27 @@
     export let navigate;
 
     let students = [];
-    let organisers = [];
+let academicTeam = [];
+let programTeam = [];
+let speakers = [];
 let crewViewerStartX = 0;
 let crewViewerEndX = 0;
     async function fetchCrew() {
-        const { data } = await supabase.from('crew_profiles').select('*');
+    const { data } = await supabase
+        .from('crew_profiles')
+        .select('*');
 
-        students = data?.filter(c => c.role === 'student') || [];
-        organisers = data?.filter(c => c.role === 'organiser') || [];
-    }
+    students = data?.filter(c => c.role === 'student') || [];
+
+    academicTeam =
+        data?.filter(c => c.role === 'academic_team') || [];
+
+    programTeam =
+        data?.filter(c => c.role === 'program_team') || [];
+
+    speakers =
+        data?.filter(c => c.role === 'speaker') || [];
+}
 
     onMount(fetchCrew);
 
@@ -22,7 +34,12 @@ let crewViewerIndex = 0;
 
 let allCrew = [];
 
-$: allCrew = [...students, ...organisers];
+$: allCrew = [
+    ...students,
+    ...academicTeam,
+    ...programTeam,
+    ...speakers
+];
 
 function openCrewViewer(index) {
     crewViewerIndex = index;
@@ -160,19 +177,22 @@ function handleCrewViewerTouchEnd(e) {
 
 /* GRID BASE */
 .grid {
-    display: grid;
+    display: flex;
+    flex-wrap: wrap;
     gap: 10px;
     justify-content: center;
+    width: 100%;
+    margin: 0 auto;
 }
 
-/* STUDENTS GRID */
+/* STUDENTS */
 .students-grid {
-    grid-template-columns: repeat(10, 1fr);
+    max-width: 950px;
 }
 
-/* MISSION CONTROL GRID */
+/* OTHER TEAMS */
 .org-grid {
-    grid-template-columns: repeat(6, 1fr);
+    max-width: 820px;
 }
 
 /* CARD */
@@ -186,6 +206,20 @@ function handleCrewViewerTouchEnd(e) {
     flex-direction: column;
     align-items: center;
     overflow: hidden;
+}
+
+.card {
+    box-sizing: border-box;
+}
+
+/* STUDENT CARD SIZE */
+.students-grid .card {
+    width: 85px;
+}
+
+/* OTHER TEAM CARD SIZE */
+.org-grid .card {
+    width: 120px;
 }
 
 .card:hover {
@@ -313,25 +347,52 @@ function handleCrewViewerTouchEnd(e) {
 /* RESPONSIVE */
 
 /* Tablet */
+/* Tablet */
 @media (max-width: 1024px) {
+
     .students-grid {
-        grid-template-columns: repeat(5, 1fr);
+        max-width: 525px;
     }
+
     .org-grid {
-        grid-template-columns: repeat(3, 1fr);
+        max-width: 410px;
+    }
+
+    .students-grid .card {
+        width: 95px;
+    }
+
+    .org-grid .card {
+        width: 130px;
     }
 }
 
 /* Phone */
 @media (max-width: 768px) {
+
     .students-grid {
-        grid-template-columns: repeat(3, 1fr);
-    }
-    .org-grid {
-        grid-template-columns: repeat(2, 1fr);
+        max-width: 320px;
     }
 
-    
+    .org-grid {
+        max-width: 280px;
+    }
+
+    .students-grid .card {
+        width: 100px;
+    }
+
+    .org-grid .card {
+        width: 135px;
+    }
+
+    .nav.left {
+        left: 5px;
+    }
+
+    .nav.right {
+        right: 5px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -371,19 +432,74 @@ function handleCrewViewerTouchEnd(e) {
     {/if}
 </div>
 
-    <!-- MISSION CONTROL -->
-    <div class="section">
-        <div class="section-title">MISSION CONTROL</div>
-        <div class="grid org-grid">
-            {#each organisers as p, i}
-                <div class="card" on:click={() => openCrewViewer(i + students.length)}>
-        <img src={p.image_url} />
-        <div class="name">{p.name}</div>
-        
+    <!-- ACADEMIC TEAM -->
+<div class="section">
+    <div class="section-title">ACADEMIC TEAM</div>
+
+    <div class="grid org-grid">
+        {#each academicTeam as p, i}
+            <div
+                class="card"
+                on:click={() =>
+                    openCrewViewer(i + students.length)
+                }
+            >
+                <img src={p.image_url} loading="lazy" />
+                <div class="name">{p.name}</div>
+                <div class="role">{p.team}</div>
+            </div>
+        {/each}
     </div>
-            {/each}
-        </div>
+</div>
+
+<!-- PROGRAM TEAM -->
+<div class="section">
+    <div class="section-title">PROGRAM TEAM</div>
+
+    <div class="grid org-grid">
+        {#each programTeam as p, i}
+            <div
+                class="card"
+                on:click={() =>
+                    openCrewViewer(
+                        i +
+                        students.length +
+                        academicTeam.length
+                    )
+                }
+            >
+                <img src={p.image_url} loading="lazy" />
+                <div class="name">{p.name}</div>
+                <div class="role">{p.team}</div>
+            </div>
+        {/each}
     </div>
+</div>
+
+<!-- SPEAKERS -->
+<div class="section">
+    <div class="section-title">SPEAKERS</div>
+
+    <div class="grid org-grid">
+        {#each speakers as p, i}
+            <div
+                class="card"
+                on:click={() =>
+                    openCrewViewer(
+                        i +
+                        students.length +
+                        academicTeam.length +
+                        programTeam.length
+                    )
+                }
+            >
+                <img src={p.image_url} loading="lazy" />
+                <div class="name">{p.name}</div>
+                <div class="role">{p.team}</div>
+            </div>
+        {/each}
+    </div>
+</div>
 
 </div>
 
