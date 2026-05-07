@@ -187,12 +187,12 @@ function handleCrewViewerTouchEnd(e) {
 
 /* STUDENTS */
 .students-grid {
-    max-width: 950px;
+    max-width: 1200px;
 }
 
 /* OTHER TEAMS */
 .org-grid {
-    max-width: 820px;
+    max-width: 1100px;
 }
 
 /* CARD */
@@ -214,12 +214,12 @@ function handleCrewViewerTouchEnd(e) {
 
 /* STUDENT CARD SIZE */
 .students-grid .card {
-    width: 85px;
+    width: 100px;
 }
 
 /* OTHER TEAM CARD SIZE */
 .org-grid .card {
-    width: 120px;
+    width: 150px;
 }
 
 .card:hover {
@@ -366,24 +366,24 @@ function handleCrewViewerTouchEnd(e) {
         width: 130px;
     }
 }
-
-/* Phone */
 @media (max-width: 768px) {
 
     .students-grid {
-        max-width: 320px;
+        max-width: 340px;
+        gap: 12px;
     }
 
     .org-grid {
-        max-width: 280px;
+        max-width: 340px;
+        gap: 12px;
     }
 
     .students-grid .card {
-        width: 100px;
+        width: 102px;
     }
 
     .org-grid .card {
-        width: 135px;
+        width: 160px;
     }
 
     .nav.left {
@@ -394,7 +394,6 @@ function handleCrewViewerTouchEnd(e) {
         right: 5px;
     }
 }
-
 @media (max-width: 768px) {
     .nav.left { left: 5px; }
     .nav.right { right: 5px; }
@@ -424,7 +423,9 @@ function handleCrewViewerTouchEnd(e) {
                     <div class="card" on:click={() => openCrewViewer(i)}>
                         <img src={p.image_url} loading="lazy" />
                         <div class="name">{p.name}</div>
-                        <div class="role">{p.team}</div>
+                        {#if p.team}
+    <div class="role">{p.team}</div>
+{/if}
                     </div>
                 {/if}
             {/each}
@@ -446,7 +447,9 @@ function handleCrewViewerTouchEnd(e) {
             >
                 <img src={p.image_url} loading="lazy" />
                 <div class="name">{p.name}</div>
-                <div class="role">{p.team}</div>
+                {#if p.team}
+    <div class="role">{p.team}</div>
+{/if}
             </div>
         {/each}
     </div>
@@ -470,7 +473,9 @@ function handleCrewViewerTouchEnd(e) {
             >
                 <img src={p.image_url} loading="lazy" />
                 <div class="name">{p.name}</div>
-                <div class="role">{p.team}</div>
+               {#if p.team}
+    <div class="role">{p.team}</div>
+{/if}
             </div>
         {/each}
     </div>
@@ -495,7 +500,9 @@ function handleCrewViewerTouchEnd(e) {
             >
                 <img src={p.image_url} loading="lazy" />
                 <div class="name">{p.name}</div>
-                <div class="role">{p.team}</div>
+                {#if p.team}
+    <div class="role">{p.team}</div>
+{/if}
             </div>
         {/each}
     </div>
